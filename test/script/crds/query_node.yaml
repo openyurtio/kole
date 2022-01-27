@@ -1,0 +1,7 @@
+apiVersion: lite.openyurt.io/v1alpha1
+kind: QueryNode
+metadata:
+  name: "query-node"
+  namespace: "infedge"
+spec:
+  nodeName: "lite-kubelet-0-0" 

@@ -1,0 +1,80 @@
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: kole
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - lite.openyurt.io
+  resources:
+  - infdaemonsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - lite.openyurt.io
+  resources:
+  - infdaemonsets/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - lite.openyurt.io
+  resources:
+  - querynodes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - lite.openyurt.io
+  resources:
+  - querynodes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - lite.openyurt.io
+  resources:
+  - summaries
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - lite.openyurt.io
+  resources:
+  - summaries/status
+  verbs:
+  - get
+  - patch
+  - update

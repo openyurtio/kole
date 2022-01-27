@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kole-controller 
+  namespace: kole 
+  labels:
+    app: kole-controller 
+spec:
+  ports:
+  - port: 80
+    name: kole-controller 
+  clusterIP: None
+  selector:
+    app: kole-controller 
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations:
+  name: kole-controller
+  namespace: kole 
+spec:
+  replicas: 0 
+  selector:
+    matchLabels:
+      app: kole-controller
+  serviceName: kole-controller
+  template:
+    metadata:
+      labels:
+        app: kole-controller
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nodepool
+                operator: In
+                values:
+                - kole-controller
+      containers:
+      - args:
+        - --v=2
+        command:
+        - /kole-controller
+        env:
+        - name: MQTT5_SERVER 
+          value: "mqtt://8.142.157.229:1883"
+        - name: HB_TIMEOUT
+          value: "300"
+        - name: NAME_SPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        image: openyurt/kole:v1
+        imagePullPolicy: Always
+        name: kole-controller
+        resources:
+          limits:
+            cpu: "8"
+            memory: 32Gi
+          requests:
+            cpu: "1"
+            memory: 2Gi
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: volume-localtime
+      dnsPolicy: ClusterFirst
+      hostNetwork: true
+      restartPolicy: Always
+      tolerations:
+      - operator: Exists
+      volumes:
+      - hostPath:
+          path: /etc/localtime
+        name: volume-localtime

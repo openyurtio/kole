@@ -1,0 +1,7 @@
+apiVersion: lite.openyurt.io/v1alpha1
+kind: InfDaemonSet 
+metadata:
+  name: "daemon-set1"
+  namespace: "infedge"
+spec:
+  image: "nginx:v1.19.0" 
