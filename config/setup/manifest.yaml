@@ -3,6 +3,7 @@ kind: Namespace
 metadata:
   name: kole
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -60,7 +61,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.namespace
-        image: openyurt/kole:v1
+        image: openyurt/kole:v1 
         imagePullPolicy: Always
         name: kole-controller
         resources:
@@ -82,7 +83,6 @@ spec:
       - hostPath:
           path: /etc/localtime
         name: volume-localtime
----
 
 ---
 apiVersion: v1
@@ -160,7 +160,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.namespace
-        image: openyurt/kole:v1
+        image: openyurt/kole:v1 
         imagePullPolicy: Always
         name: lite-kubelet
         resources:
@@ -184,7 +184,6 @@ spec:
           path: /etc/localtime
           type: ""
         name: volume-localtime
----
 
 ---
 apiVersion: apiextensions.k8s.io/v1

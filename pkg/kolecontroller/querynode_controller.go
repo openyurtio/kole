@@ -190,7 +190,7 @@ func (c *QueryNodeController) syncProcess(key string) error {
 
 	s := c.infEdgeCtl.QueryNodeStatusCache.GetNodeStatus(qnode.Spec.NodeName)
 	if qnode.Status == nil {
-		qnode.Status = &v1alpha1.QueryNodeStatus{}
+		qnode.Status = make([]*v1alpha1.QueryNodeStatus, 0, 10)
 	}
 
 	if !reflect.DeepEqual(s, qnode.Status) {

@@ -34,7 +34,7 @@ type QueryNode struct {
 	Spec *QueryNodeSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
 
 	// +optional
-	Status *QueryNodeStatus `json:"status" protobuf:"bytes,3,opt,name=status"`
+	Status []*QueryNodeStatus `json:"status" protobuf:"bytes,3,opt,name=status"`
 }
 
 type QueryNodeSpec struct {
@@ -42,6 +42,12 @@ type QueryNodeSpec struct {
 	// It must match the nodepool's labels.
 	// +optional
 	NodeName string `json:"nodeName,omitempty"`
+	// +optional
+	NodeStatus string `json:"nodeStatus,omitempty"`
+	// +optional
+	NodeLabelSelector string `json:"nodeLabelSelector,omitempty"`
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
 
 type QueryNodeStatus struct {

@@ -28,9 +28,12 @@ GIT_COMMIT=$(git rev-parse --short HEAD)
 GIT_COMMIT_SHORT=$GIT_COMMIT
 GIT_VERSION=${GIT_VERSION:-v0.2.0}
 BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-REPO=${REPO:-openyurt}
 TAG=${TAG:-${GIT_COMMIT_SHORT}}
+
+IMAGES=${IMAGES:-"openyurt/kole:v1"}
+MQTT5_SERVER=${MQTT5_SERVER:-"mqtt://8.142.157.229:1883"}
 
 source "${KOLE_ROOT}/hack/lib/binary.sh"
 source "${KOLE_ROOT}/hack/lib/release-images.sh"
 source "${KOLE_ROOT}/hack/lib/generate.sh"
+source "${KOLE_ROOT}/hack/lib/manifest.sh"

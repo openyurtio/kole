@@ -22,7 +22,6 @@ all: binary
 #   GOARCH: go GOARCH.
 #   GOOS: go GOOS 
 #
-# GOARCH=amd64 GOOS=linux
 # Examples:
 #   make binary
 #   or
@@ -43,15 +42,23 @@ vet:
 # Build binaries and push docker images.  
 # NOTE: this rule can take time, as we build binaries inside containers
 #
+# ARGS:
+#   IMAGES: It is used to define your private image, default is  openyurt/kole:v1 
+#   MQTT5_SERVER: It is used to define the address of mqtt5 server, default is mqtt://8.142.157.229:1883. The default address may not be available, you must specify the address of your own MQTT Server.
 #
 # Examples:
 #   make release
+#   or 
+#   IMAGES="openyurt/kole:v2" make release
+#   or
+#   MQTT5_SERVER="mqtt://8.142.157.111:1883" IMAGES="openyurt/kole:v2" make release
+#    
 release: fmt vet
 	bash hack/make-rules/release-images.sh
+	bash hack/make-rules/manifest.sh
 
 clean: 
 	-rm -Rf _output
 
 generate: 
 	bash hack/make-rules/generate.sh
-	bash config/setup/create_manifest.sh

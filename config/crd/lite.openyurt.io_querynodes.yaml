@@ -39,21 +39,31 @@ spec:
             type: object
           spec:
             properties:
+              nodeLabelSelector:
+                type: string
               nodeName:
                 description: NodePoolSelector is a label query over nodepool that
                   should match the replica count. It must match the nodepool's labels.
                 type: string
+              nodeSelector:
+                additionalProperties:
+                  type: string
+                type: object
+              nodeStatus:
+                type: string
             type: object
           status:
-            properties:
-              infEdgeNodeName:
-                type: string
-              status:
-                type: string
-            required:
-            - infEdgeNodeName
-            - status
-            type: object
+            items:
+              properties:
+                infEdgeNodeName:
+                  type: string
+                status:
+                  type: string
+              required:
+              - infEdgeNodeName
+              - status
+              type: object
+            type: array
         type: object
     served: true
     storage: true

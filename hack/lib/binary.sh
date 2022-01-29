@@ -37,7 +37,6 @@ build_binary() {
     mkdir -p ${bin_dir}
     allCommand=$(ls $KOLE_ROOT/cmd/)
     for subCommand in $allCommand; do
-        echo $subCommand
         echo ""
         (
             local bin_name=$subCommand

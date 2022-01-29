@@ -20,14 +20,16 @@ KOLE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)"
 
 TEE="tee -a /tmp/storm_test.log"
 
-
 ###################### Pod nums #######################
-POD_NUMS=`expr 5`
+POD_NUMS=`expr 200`
+
+TOTAL_LITE_KUBELET_NUM=`expr 100000`
+
+############################################################
 
 #TOTAL_LITE_KUBELET_NUM_POOLS=(100000 200000 300000 400000)
-TOTAL_LITE_KUBELET_NUM_POOLS=(100000)
 
-TOTAL_LITE_KUBELET_NUM=`expr 100`
+TOTAL_LITE_KUBELET_NUM_POOLS=(100000)
 
 # The time interval for starting an MQTT CLIENT is in ms
 CREATE_CLIENT_INTERVAL=`expr 10`
@@ -38,13 +40,11 @@ LITE_KUBELET_HEAT_BEAT_INTERVAL=$[60 * 2]
 # Heartbeat timeout period of the kole-controller (s)
 CONTROLLER_HB_TIMEOUT=300
 
-############################################################
 GREP_CREATE_CLIENT="Create client and Subscribe all topic successful node"
 GREP_REGISTER_NODE="registering successful node"
 LITE_NAME="lite-kubelet"
 CONTROLLER_NAME="kole-controller"
 NAME_SPACE="kole"
-
 KUBECTL="kubectl -n $NAME_SPACE"
 
 # Need to calculate according to TOTAL_LITE_KUBELET_NUM and POD_NUMS
