@@ -10,7 +10,7 @@ make release
 
 ## Quick Start
 
-Please check the [tuturial](./docs/tutorial.md) for a DEMO run.
+Please check the [tutorial](./docs/tutorial.md) for a DEMO run.
 
 ## Notes
 The `lite-kubelet` in KOLE is hosted in this [repo](https://github.com/openyurtio/lite-kubelet).
