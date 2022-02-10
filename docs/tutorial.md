@@ -1,27 +1,25 @@
-# Instructions
+# KOLE DEMO
 
-This tutorial focuses on how to deploy the Kole project
+This tutorial describes how to deploy KOLE and use KOLE to conduct a bulk registration experiment.
 
-## Environmental requirements
+## Environment
 
-### Kubernetes Cluster
+### Kubernetes
 
-Need to create a kubernetes ahead of the cluster, here we use the [ali cloud container service](https://cs.console.aliyun.com/), provides a standard  Pro cluster.
+KOLE can be installed in any Kubernentes cluster with 1.20 or later release. 
 
-### Emqx Cluster
-Emqx clusters can be deployed on kubernetes clusters. For details about the deployment mode, see [link](https://www.emqx.com/zh/blog/rapidly-deploy-emqx-clusters-on-kubernetes-via-helm)
+### MQTT broker
 
-It is recommended that the emqx service type be LoadBalancer. The LoadBalancer service provides a public IP address (LOADBALANCE_IP). Next we will use the LOADBALANCE_IP IP。
+KOLE works with any standard MQTT brokers. In this tutorial, we choose to install
+an open-source EMQX broker using thea cluster deployment mode. Please refer to this [link](https://www.emqx.com/zh/blog/rapidly-deploy-emqx-clusters-on-kubernetes-via-helm)
+for details. Note that a helm chart is provided for easy installation.
+To access the broker service, we recommend to setup a LoadBalancer type of service with
+a public IP as an ingress. We refer to the public IP as `LOADBALANCE_IP` in the rest of the document.
 
-# How to deploy
+## Deploy KOLE
 
-## Deploy Instructions
-
-All of the following operations are in the kole source root directory.
-
-##  Deploy Kole related components
-
-Kole consists of two main components, kole-controller and lite-kubelet, as well as some CRD definitions.All related components are deployed under the namespace kole.
+All instructions are done in the KOLE's root directory.
+Two main components: kole-controller and lite-kubelet, as well as the CRD definitions will be installed in the `kole` namespace.
 
 ``` 
 $ kubectl apply -f config/setup/manifest.yaml
@@ -40,17 +38,8 @@ clusterrole.rbac.authorization.k8s.io/kole created
 clusterrolebinding.rbac.authorization.k8s.io/kole-rolebinding created
 ```
 
-
-Check out the statefulsets of kole-controller and lite-kubelet:
-
-``` 
-$ kubectl get statefulsets.apps -n kole
-NAME              READY   AGE
-kole-controller   0/0     92s
-lite-kubelet      0/0     92s
-```
-
-Change the value of the statefulSet environment variable MQTT5_SERVER for kole-controller and lite-kubelet.
+After all Pods are running and the LB type service is created successfully, we need to change the environment variable `MQTT5_SERVER` for the
+kole-controller and lite-kubelet StatefulSets.
 
 ```
         env:
@@ -58,9 +47,8 @@ Change the value of the statefulSet environment variable MQTT5_SERVER for kole-c
           value: mqtt://8.142.157.229:1883
 ```
 
-We need to put the `mqtt://8.142.157.229:1883` this value into the new emqx service corresponding to the public IP address: `mqtt://${LOADBALANCE_IP}:1883`
-
-Run the following command to change the value:
+For example, we need to change the mqtt address from `mqtt://8.142.157.229:1883` to `mqtt://${LOADBALANCE_IP}:1883`.
+This can be done using the `patch` API.
 
 ```
 CONTROLLER_PATCH=$(cat <<- EOF
@@ -92,84 +80,68 @@ EOF
 $ kubectl patch -n kole statefulsets.apps lite-kubelet --patch "$CONTROLLER_PATCH"
 
 ```
+With the above, we setup KOLE with one node being registered. We can check the controller and the lite-kubelet, i.e., the edge client, logs to 
+understand the design..
 
-## How to test
+
+## Test the bulk registration
 
 
-`test/script/storm.sh` is used to simulate registration tests for different node sizes. The `start` command emulates 200 pods with 10W nodes by default.
+The `test/script/storm.sh` script is used to simulatee the bulk registration. Using the `start` command will create 200 load generator pods and
+100K edge clients will be created by them in total. The workload will be evenly distributed across the Pods.
 
 ```
 $ ./test/script/storm.sh start
 
 ```
 
-To change the number of nodes and the number of pods, modify the following parameter values in the `test/script/storm.sh`  file, Then run the `start` command again。
+To change the number of edge clients and the number of pods, one can modify the following parameters in the script:
 
 ```
 POD_NUMS=`expr 200`
-
 TOTAL_LITE_KUBELET_NUM=`expr 100000`
 ```
 
-`storm.sh start` will monitors whether all pods are created. If the creation is complete, the following log is generated to record the time required for the creation of all pods: such as
-
+When all load generator pods are created successfully, the following log is printed:
 
 ```
 The time required to create the last POD is *** s
 ```
 
-After all the pods are created, we need to modify the configMap so that lite-kubelet in the pod triggers the registerring Node operation:
-
-By default, lite-kubelet monitors changes in the configmap named `lite-kubelet-start-signal` under [kole] namespace, if the date of `lite-kubelet-start-signal`  changed, lite-kubelet registering hb and registering hb are automatically triggered,
-
+After all pods are created, we need to modify a configMap so that they can start to create edge clients simultaneously.
+The configmap is named `lite-kubelet-start-signal` in `kole` namespace. The trigger is to change the `test` field in the data.
 
 ```
 $ kubectl get cm -n kole  lite-kubelet-start-signal -o yaml
 apiVersion: v1
 
 kind: ConfigMap
-metadata:
-  creationTimestamp: "2022-01-27T08:29:15Z"
-  name: lite-kubelet-start-signal
-  namespace: kole
-  resourceVersion: "4193091"
-  uid: 5b9f614c-74c0-4679-8d3d-458c245b587f
-  
 data:
   test: start
 ```
 
-
-We can modify the `lite-kubelet-start-signal` configmap configuration using the following command：
+For example, we can modify the value to `start-round1` using the following command:
 
 ```
 CM_PATCH=$(cat <<- EOF
 data:
-  test: start1111
+  test: start-round1
 EOF
 )
 
 $ kubectl patch -n kole cm lite-kubelet-start-signal  --patch "$CM_PATCH"
 ```
 
-
-
-Continue to monitor the log generated by `storm.sh start`. If all registerring hb registers successfully and kole-controller returns an ack. a log similar to the following is output:
-
-```
-All Lite-Kubelet registrations take time to complete is *** ms
+We can continue to monitor the logs generated by the script.
+If all registers are done, a log similar to the following will be printed in the output:
 
 ```
+All Lite-Kubelet registrations take *** ms
 
+```
 
-also, you can check the log of kole-controller to see the number of registered hosts：
+also, we can check the log of the kole-controller controller to see the number of registered hosts：
 
 ```
 $ kubectl -n kole logs -f kole-controller-0
 ```
-
-
-
-
-
-

@@ -158,7 +158,7 @@ function checkAllRegisterSuccess() {
     done
     
     local LITE_FINISH_TIME=`expr $(date +%s)`
-    echo "All Lite-Kubelet registrations take time to complete is $MAX_TIME ms" | $TEE
+    echo "All Lite-Kubelet registrations take $MAX_TIME ms" | $TEE
 
 }
 
