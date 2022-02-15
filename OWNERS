@@ -1,0 +1,10 @@
+# See: https://go.k8s.io/owners
+approvers:
+  - Fei-Guo
+  - huangyuqi
+  - kadisi
+reviewers:
+  - Fei-Guo
+  - huangyuqi
+  - rambohe-ch
+  - kadisi
