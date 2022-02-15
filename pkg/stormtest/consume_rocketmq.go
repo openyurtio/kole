@@ -66,9 +66,9 @@ func NewConsumeRocketMQ(config *options.RocketMQFlags) (*ConsumeRocketMQ, error)
 }
 
 func (n *ConsumeRocketMQ) ComsumeRocketMq(message string) {
-	hb, err := data.UnmarshalPayloadToHeatBeat([]byte(message))
+	hb, err := data.UnmarshalPayloadToHeartBeat([]byte(message))
 	if err != nil {
-		klog.Errorf("UnmarshalPayloadToHeatBeat error %v", err)
+		klog.Errorf("UnmarshalPayloadToHeartBeat error %v", err)
 		return
 	}
 	klog.Infof("Receive Message %s", hb.Name)

@@ -49,7 +49,7 @@ func (c *LiteKubelet) RegisterAndSubscribeTopic() error {
 }
 
 func (c *LiteKubelet) SubCTL(client outmqtt.Client, message outmqtt.Message) {
-	ack, err := data.UnmarshalPayloadToHeatBeatACK(message.Payload())
+	ack, err := data.UnmarshalPayloadToHeartBeatACK(message.Payload())
 	if err != nil {
 		klog.Errorf("Unmarshalpayload to headbeatack error %v", err)
 		return

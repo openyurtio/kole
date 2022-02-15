@@ -39,14 +39,14 @@ type QueryNodeController struct {
 	kubeclient versioned.Interface
 	queue      workqueue.RateLimitingInterface    //workqueue 的引用
 	informer   externalV1alpha1.QueryNodeInformer // Informer 的引用
-	infEdgeCtl *InfEdgeController
+	koleCtl    *KoleController
 	lister     listV1alpha1.QueryNodeLister
 }
 
 // NewQueryNodeController creates a new  QueryNodeController.
 func NewQueryNodeController(client versioned.Interface,
 	informer externalV1alpha1.QueryNodeInformer,
-	infedgeCtl *InfEdgeController) (*QueryNodeController, error) {
+	koleCtl *KoleController) (*QueryNodeController, error) {
 
 	queue := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 
@@ -55,7 +55,7 @@ func NewQueryNodeController(client versioned.Interface,
 		informer:   informer,
 		queue:      queue,
 		lister:     informer.Lister(),
-		infEdgeCtl: infedgeCtl,
+		koleCtl:    koleCtl,
 	}
 
 	informer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -105,7 +105,6 @@ func (c *QueryNodeController) Run(threadiness int, stopCh chan struct{}) {
 
 	klog.Info("Starting QueryNode controller")
 
-	// 启动多个 worker 处理 workqueue 中的对象
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
@@ -115,21 +114,16 @@ func (c *QueryNodeController) Run(threadiness int, stopCh chan struct{}) {
 }
 
 func (c *QueryNodeController) runWorker() {
-	// 启动无限循环，接收并处理消息
 	for c.processNextItem() {
-
 	}
 }
 
-// 从 workqueue 中获取对象，并打印信息。
 func (c *QueryNodeController) processNextItem() bool {
 	key, shutdown := c.queue.Get()
-	// 退出
 	if shutdown {
 		return false
 	}
 
-	// 标记此key已经处理
 	defer c.queue.Done(key)
 
 	err := c.syncProcess(key.(string))
@@ -164,7 +158,6 @@ func (c *QueryNodeController) handleErr(err error, key interface{}) {
 	klog.Infof("Dropping InfDaemonSet %q out of the queue: %v", key, err)
 }
 
-// 获取 key 对应的 object，并打印相关信息
 func (c *QueryNodeController) syncProcess(key string) error {
 
 	startTime := time.Now()
@@ -188,7 +181,7 @@ func (c *QueryNodeController) syncProcess(key string) error {
 		return fmt.Errorf("unable to retrieve ds %v from store: %v", key, err)
 	}
 
-	s := c.infEdgeCtl.QueryNodeStatusCache.GetNodeStatus(qnode.Spec.NodeName)
+	s := c.koleCtl.QueryNodeStatusCache.GetNodeStatus(qnode.Spec.NodeName)
 	if qnode.Status == nil {
 		qnode.Status = make([]*v1alpha1.QueryNodeStatus, 0, 10)
 	}

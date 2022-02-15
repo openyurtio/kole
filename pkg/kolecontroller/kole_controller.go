@@ -49,7 +49,7 @@ type SendMessage struct {
 	Data  interface{}
 }
 
-type InfEdgeController struct {
+type KoleController struct {
 	MessageHandler message.MessageHandler
 
 	ObserverdPodsCache   *ObserverdPodsCache
@@ -60,12 +60,11 @@ type InfEdgeController struct {
 	QueryNodeController    *QueryNodeController
 
 	// key nodename
-	HeatBeatCache *HeatBeatCache
+	HeartBeatCache *HeartBeatCache
 
-	// s
-	HeatBeatTimeOut int64
+	HeartBeatTimeOut int64
 
-	HeatBeatFilter *HeatBeatFilter
+	HeartBeatFilter *HeartBeatFilter
 
 	DataProcess       DataProcesser
 	SnapshotInterval  int
@@ -78,7 +77,7 @@ type InfEdgeController struct {
 	ReceiveNum        int64
 }
 
-func NewMainKoleController(stop chan struct{}, config *options.KoleControllerFlags, processer DataProcesser) (*InfEdgeController, error) {
+func NewMainKoleController(stop chan struct{}, config *options.KoleControllerFlags, processer DataProcesser) (*KoleController, error) {
 
 	c, err := clientcmd.BuildConfigFromFlags("", config.KubeConfig)
 	if err != nil {
@@ -88,7 +87,6 @@ func NewMainKoleController(stop chan struct{}, config *options.KoleControllerFla
 	// set rate limit
 	c.RateLimiter = flowcontrol.NewTokenBucketRateLimiter(2000, 3000)
 
-	// 实例化clientset对象
 	crdclient, err := versioned.NewForConfig(c)
 	if err != nil {
 		return nil, err
@@ -99,20 +97,19 @@ func NewMainKoleController(stop chan struct{}, config *options.KoleControllerFla
 		return nil, err
 	}
 
-	infEdge := &InfEdgeController{
-		SummaryNS: config.NameSpace,
-		//		HeatBeatACKQueue:      make(chan *data.HeatBeatACK, 1000000),
-		HeatBeatTimeOut:   int64(config.HBTimeOut),
+	koleInstance := &KoleController{
+		SummaryNS:         config.NameSpace,
+		HeartBeatTimeOut:  int64(config.HBTimeOut),
 		LiteClient:        crdclient,
 		DataProcess:       processer,
 		SnapshotInterval:  config.SnapshotInterval,
 		SnapdSummaryNames: snapedName,
 
-		HeatBeatCache: &HeatBeatCache{
+		HeartBeatCache: &HeartBeatCache{
 			RWMutex: &sync.RWMutex{},
 			Cache:   heatBeatCache,
 		},
-		HeatBeatFilter: &HeatBeatFilter{
+		HeartBeatFilter: &HeartBeatFilter{
 			Mutex:  &sync.Mutex{},
 			Filter: heatBeatFilter,
 		},
@@ -132,10 +129,10 @@ func NewMainKoleController(stop chan struct{}, config *options.KoleControllerFla
 
 	factory := externalversions.NewSharedInformerFactory(crdclient, time.Second*70)
 	infDaemonSetInfor := factory.Lite().V1alpha1().InfDaemonSets()
-	controller, err := NewInfDaemonSetController(crdclient, infDaemonSetInfor, infEdge)
+	controller, err := NewInfDaemonSetController(crdclient, infDaemonSetInfor, koleInstance)
 
 	queryNodeInfor := factory.Lite().V1alpha1().QueryNodes()
-	queryNodeController, err := NewQueryNodeController(crdclient, queryNodeInfor, infEdge)
+	queryNodeController, err := NewQueryNodeController(crdclient, queryNodeInfor, koleInstance)
 
 	go factory.Start(stop)
 
@@ -150,8 +147,8 @@ func NewMainKoleController(stop chan struct{}, config *options.KoleControllerFla
 	go controller.Run(5, stop)
 	go queryNodeController.Run(5, stop)
 
-	infEdge.InfDaemonSetController = controller
-	infEdge.QueryNodeController = queryNodeController
+	koleInstance.InfDaemonSetController = controller
+	koleInstance.QueryNodeController = queryNodeController
 
 	for nodeName, _ := range heatBeatCache {
 		controller.AddHost(nodeName)
@@ -160,31 +157,27 @@ func NewMainKoleController(stop chan struct{}, config *options.KoleControllerFla
 		h, err := message.NewMqtt3Handler(config.Mqtt3Flags.MqttBroker, config.Mqtt3Flags.MqttBrokerPort, config.Mqtt3Flags.MqttInstance, config.Mqtt3Flags.MqttGroup,
 			"kole-controller",
 			map[string]outmqtt.MessageHandler{
-				util.TopicHeatbeat: infEdge.Mqtt3SubEdgeHeatBeat,
+				util.TopicHeartBeat: koleInstance.Mqtt3SubEdgeHeartBeat,
 			})
 		if err != nil {
 			return nil, err
 		}
-		infEdge.MessageHandler = h
+		koleInstance.MessageHandler = h
 	} else {
 		// mqtt 5
-		h, err := message.NewMqtt5Handler(config.Mqtt5Flags.MqttServer, infEdge.Mqtt5CreateSubscribes(), "kolecontroller-mqtt-v5", false)
+		h, err := message.NewMqtt5Handler(config.Mqtt5Flags.MqttServer, koleInstance.Mqtt5CreateSubscribes(), "kolecontroller-mqtt-v5", false)
 		if err != nil {
 			return nil, err
 		}
-		infEdge.MessageHandler = h
+		koleInstance.MessageHandler = h
 	}
 
-	// Old use seesion
-	//infEdge.MqttClient = mqtt.NewSessionMqttClient(config.MqttBroker, config.MqttBrokerPort, clientID, username, passwd)
-	//infEdge.subscribeTopics()
+	klog.V(4).Infof("Create kole cloud mqtt client successfully")
 
-	klog.V(4).Infof("create mqtt client successful")
-
-	return infEdge, nil
+	return koleInstance, nil
 }
 
-func (l *InfEdgeController) Run() error {
+func (l *KoleController) Run() error {
 
 	go l.SnapShotLoop()
 	return nil

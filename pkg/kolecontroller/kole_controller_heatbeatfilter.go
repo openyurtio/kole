@@ -29,22 +29,22 @@ type FilterInfo struct {
 	TimeStamp int64
 }
 
-type HeatBeatFilter struct {
+type HeartBeatFilter struct {
 	*sync.Mutex
 	Filter map[string]*FilterInfo
 }
 
-func (c *HeatBeatFilter) SetHeatBeat(hb *data.HeatBeat) bool {
+func (c *HeartBeatFilter) SetHeartBeat(hb *data.HeartBeat) bool {
 	c.Lock()
 	setSuccess := true
 
 	old, ok := c.Filter[hb.Name]
 	if ok {
 		if hb.SeqNum < old.SeqNum {
-			klog.Warningf("Receive HeatBeat Node %s Seq %v is less then cache seq %v, do nothing", hb.Name, hb.SeqNum, old.SeqNum)
+			klog.Warningf("Received heartbeat from %s, seq %v is less then cached seq %v, skip", hb.Name, hb.SeqNum, old.SeqNum)
 			setSuccess = false
 		} else if hb.SeqNum == old.SeqNum && hb.TimeStamp <= old.TimeStamp {
-			klog.V(4).Infof("Receive HeatBeat Node %s Seq %v equal cache seq, but timestamp[%v] is less or equal than cache[%v], do nothing", hb.Name, hb.SeqNum,
+			klog.V(4).Infof("Received heatbeat from %s, seq %v is equal to the cached seq, but the timestamp[%v] older than the cached value [%v], skip", hb.Name, hb.SeqNum,
 				hb.TimeStamp, old.TimeStamp)
 			setSuccess = false
 		}

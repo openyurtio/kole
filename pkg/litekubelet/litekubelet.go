@@ -113,11 +113,11 @@ func NewMainLiteKubelet(deps *options.LiteKubeletFlags, index int, ismqtt5 bool)
 }
 
 func (l *LiteKubelet) runRealyLoop() {
-	var hb *data.HeatBeat
+	var hb *data.HeartBeat
 	var err error
 
 	for {
-		hb, err = l.registeringHeatBeat(true)
+		hb, err = l.registeringHeartBeat(true)
 		if err != nil {
 			klog.Errorf("%s Registering heatbeat error %v", l.HostnameOverride, err)
 			time.Sleep(time.Second * 10)
@@ -127,7 +127,7 @@ func (l *LiteKubelet) runRealyLoop() {
 	}
 	l.Registerd = true
 
-	l.registerdHeatBeatLoop(hb)
+	l.registerdHeartBeatLoop(hb)
 }
 
 func (l *LiteKubelet) Run() {

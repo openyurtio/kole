@@ -19,14 +19,14 @@ import (
 	"encoding/json"
 )
 
-type HeatBeatACK struct {
+type HeartBeatACK struct {
 	Identifier string `json:"identifier,omitempty"`
 	Registerd  bool   `json:"registerd,omitempty"`
 	NodeName   string `json:"-"`
 }
 
-func UnmarshalPayloadToHeatBeatACK(payload []byte) (*HeatBeatACK, error) {
-	d := &HeatBeatACK{}
+func UnmarshalPayloadToHeartBeatACK(payload []byte) (*HeartBeatACK, error) {
+	d := &HeartBeatACK{}
 	if err := json.Unmarshal(payload, d); err != nil {
 		return nil, err
 	}

@@ -35,7 +35,7 @@ import (
 	"github.com/openyurtio/kole/pkg/util"
 )
 
-func TestConsumeHeatBeat(t *testing.T) {
+func TestConsumeHeartBeat(t *testing.T) {
 	stop := make(chan struct{}, 1)
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -50,25 +50,24 @@ func TestConsumeHeatBeat(t *testing.T) {
 	// set rate limit
 	c.RateLimiter = flowcontrol.NewTokenBucketRateLimiter(10000, 10000)
 
-	// 实例化clientset对象
 	crdclient, err := versioned.NewForConfig(c)
 	if err != nil {
 		t.Fatalf("Build versioned config error %v", err)
 	}
 
-	infedge := &InfEdgeController{
-		HeatBeatCache: &HeatBeatCache{
+	koleInstance := &KoleController{
+		HeartBeatCache: &HeartBeatCache{
 			RWMutex: &sync.RWMutex{},
-			Cache:   make(map[string]*data.HeatBeat),
+			Cache:   make(map[string]*data.HeartBeat),
 		},
-		HeatBeatFilter: &HeatBeatFilter{
+		HeartBeatFilter: &HeartBeatFilter{
 			Mutex:  &sync.Mutex{},
 			Filter: make(map[string]*FilterInfo),
 		},
 
 		ObserverdPodsCache: &ObserverdPodsCache{
 			RWMutex: &sync.RWMutex{},
-			Cache:   make(map[string]map[string]*data.HeatBeatPod),
+			Cache:   make(map[string]map[string]*data.HeartBeatPod),
 		},
 		QueryNodeStatusCache: &QueryNodeStatusCache{
 			RWMutex:      &sync.RWMutex{},
@@ -92,15 +91,15 @@ func TestConsumeHeatBeat(t *testing.T) {
 
 	go controller.Run(5, stop)
 
-	infedge.InfDaemonSetController = controller
+	koleInstance.InfDaemonSetController = controller
 
-	hb := util.InitMockHeatBeat("", 1)
+	hb := util.InitMockHeartBeat("", 1)
 
 	for i := 1; i <= 10; i++ {
 		n := time.Now()
 		for j := 0; j < 100000; j++ {
 			hb.Name = fmt.Sprintf("%d-%d", i, j)
-			infedge.ConsumeSingleHeatBeat(hb)
+			koleInstance.ConsumeSingleHeartBeat(hb)
 		}
 		t.Logf("%d0w use %d ms", i, time.Now().Sub(n).Milliseconds())
 	}

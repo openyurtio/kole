@@ -217,10 +217,10 @@ func (n *Compression) DeleteSummariesByNS(ns string) error {
 	return nil
 }
 
-// ProcessHeatBeatMap  only just simulates how to deal with heatBeatCache without doing anything meaningful
-func ProcessHeatBeatMap(heatBeatCache map[string]*data.HeatBeat) {
+// ProcessHeartBeatMap  only just simulates how to deal with heatBeatCache without doing anything meaningful
+func ProcessHeartBeatMap(heatBeatCache map[string]*data.HeartBeat) {
 	heatBeatFilter := make(map[string]*kolecontroller.FilterInfo)
-	observerdPods := make(map[string]map[string]*data.HeatBeatPod)
+	observerdPods := make(map[string]map[string]*data.HeartBeatPod)
 	nodeStatus := make(map[string]*v1alpha1.QueryNodeStatus)
 
 	for i, hb := range heatBeatCache {
@@ -232,9 +232,9 @@ func ProcessHeatBeatMap(heatBeatCache map[string]*data.HeatBeat) {
 			Status:          hb.State,
 			InfEdgeNodeName: hb.Name,
 		}
-		observerdPods[hb.Name] = make(map[string]*data.HeatBeatPod)
+		observerdPods[hb.Name] = make(map[string]*data.HeartBeatPod)
 		for _, hbp := range hb.Pods {
-			observerdPods[hb.Name][hbp.Key()] = &data.HeatBeatPod{
+			observerdPods[hb.Name][hbp.Key()] = &data.HeartBeatPod{
 				Hash:      hbp.Hash,
 				Name:      hbp.Name,
 				NameSpace: hbp.NameSpace,
@@ -273,7 +273,7 @@ func (n *Compression) Run() error {
 	}
 
 	now = time.Now()
-	heatBeatCache := make(map[string]*data.HeatBeat)
+	heatBeatCache := make(map[string]*data.HeartBeat)
 	cachedata, err := n.LoadSummariesByNs(n.DstNs)
 	if err != nil {
 		klog.Errorf("List cr in DstNs namespace fail: %v", err)
@@ -283,7 +283,7 @@ func (n *Compression) Run() error {
 		klog.Errorf("unmarshal error %v", err)
 		return err
 	}
-	ProcessHeatBeatMap(heatBeatCache)
+	ProcessHeartBeatMap(heatBeatCache)
 	needTime = time.Now().Sub(now).Milliseconds()
 	klog.Infof("[No Compress] Load all summaries from %s ns , datalen %d use %d ms", n.DstNs, len(cachedata), needTime)
 
@@ -335,12 +335,12 @@ func (n *Compression) Run() error {
 		return err
 	}
 
-	heatBeatCache = make(map[string]*data.HeatBeat)
+	heatBeatCache = make(map[string]*data.HeartBeat)
 	if err = json.Unmarshal(uncmp, &heatBeatCache); err != nil {
 		klog.Errorf("unmarshal error %v", err)
 		return err
 	}
-	ProcessHeatBeatMap(heatBeatCache)
+	ProcessHeartBeatMap(heatBeatCache)
 	needTime = time.Now().Sub(now).Milliseconds()
 	klog.Infof("[Algthm %s] Uncompress load cache from %s namespace use %d ms",
 		n.Algthm,

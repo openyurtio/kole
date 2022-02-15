@@ -20,34 +20,32 @@ import (
 	"fmt"
 )
 
-const HeatBeatRegistering = "Registering"
-const HeatBeatRegisterd = "Registerd"
-const HeatBeatOffline = "Offline"
+const HeartBeatRegistering = "Registering"
+const HeartBeatRegisterd = "Registerd"
+const HeartBeatOffline = "Offline"
 
 const OFFLINE_TIMEOUT = 60 * 20
 
-type HeatBeat struct {
-	Name string `json:"name,omitempty"`
-	// 未来可能用于workload 的label selector
+type HeartBeat struct {
+	Name      string            `json:"name,omitempty"`
 	Labels    map[string]string `json:"labels,omitempty"`
 	TimeStamp int64             `json:"timestamp,omitempty"`
-	// 仅用于云端控制器记录上一次收到的时间戳记录，用于判断是否超时
-	LasterTimeStamp int64           `json:"-"`
-	Identifier      string          `json:"identifier,omitempty"`
-	SeqNum          uint64          `json:"seqnum,omitempty"`
-	State           string          `json:"state,omitempty"`
-	Status          *HeatBeatStatus `json:"status,omitempty"`
-	Pods            []*HeatBeatPod  `json:"pods,omitempty"`
+	// Used in cloud state cache only
+	LasterTimeStamp int64            `json:"-"`
+	Identifier      string           `json:"identifier,omitempty"`
+	SeqNum          uint64           `json:"seqnum,omitempty"`
+	State           string           `json:"state,omitempty"`
+	Status          *HeartBeatStatus `json:"status,omitempty"`
+	Pods            []*HeartBeatPod  `json:"pods,omitempty"`
 }
 
-type HeatBeatStatus struct {
-	// IP地址
+type HeartBeatStatus struct {
+	// IP
 	Addresses []*Address `json:"addresses,omitempty"`
-	// 可分配的资源， 便于云端控制器调度
+	// Resources that can be used by cloud scheduler
 	Allocatable *Resource `json:"allocatable,omitempty"`
-	// 容量
-	Capacity *Resource `json:"capacity,omitempty"`
-	NodeInfo *NodeInfo `json:"nodeInfo,omitempty"`
+	Capacity    *Resource `json:"capacity,omitempty"`
+	NodeInfo    *NodeInfo `json:"nodeInfo,omitempty"`
 }
 
 const AddressTypeInternal = "InternalIP"
@@ -73,28 +71,27 @@ type NodeInfo struct {
 	KernelVersion      string
 }
 
-type HeatBeatPod struct {
-	// 只需要上报它的hash 值， 这样方便云端控制器 根据workload 判断是否要重新下发新的配置
-	// 不需要上传pod 的具体spec 信息
-	Hash      string             `json:"hash,omitempty"`
-	Name      string             `json:"name,omitempty"`
-	NameSpace string             `json:"namespace,omitempty"`
-	Status    *HeatBeatPodStatus `json:"status,omitempty"`
+type HeartBeatPod struct {
+	// We only report the hash of the Pod Spec in the edge node to compare against the spec in the cloud state cache.
+	Hash      string              `json:"hash,omitempty"`
+	Name      string              `json:"name,omitempty"`
+	NameSpace string              `json:"namespace,omitempty"`
+	Status    *HeartBeatPodStatus `json:"status,omitempty"`
 }
 
-func (p *HeatBeatPod) Key() string {
+func (p *HeartBeatPod) Key() string {
 	return fmt.Sprintf("%s-%s", p.NameSpace, p.Name)
 }
 
-const HeatBeatPodStatusRunning = "Running"
+const HeartBeatPodStatusRunning = "Running"
 
-type HeatBeatPodStatus struct {
+type HeartBeatPodStatus struct {
 	// Runing ,Completed, Termaled ...
 	Phase string `json:"phase,omitempty"`
 }
 
-func UnmarshalPayloadToHeatBeat(payload []byte) (*HeatBeat, error) {
-	d := &HeatBeat{}
+func UnmarshalPayloadToHeartBeat(payload []byte) (*HeartBeat, error) {
+	d := &HeartBeat{}
 	if err := json.Unmarshal(payload, d); err != nil {
 		return nil, err
 	}

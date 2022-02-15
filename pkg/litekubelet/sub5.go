@@ -58,7 +58,7 @@ func (c *LiteKubelet) ConsumeSubLoop() {
 	// CTL
 	go func() {
 		for p := range c.Sub5CtlChan {
-			ack, err := data.UnmarshalPayloadToHeatBeatACK(p.Payload)
+			ack, err := data.UnmarshalPayloadToHeartBeatACK(p.Payload)
 			if err != nil {
 				klog.Errorf("Unmarshalpayload to headbeatack error %v", err)
 				return

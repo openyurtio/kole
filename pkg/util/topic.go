@@ -21,12 +21,12 @@ import (
 
 const TopicRoot = "kole/lite"
 
-var TopicHeatbeat string
+var TopicHeartBeat string
 var TopicCTLPrefix string
 var TopicDataPrefix string
 
 func init() {
-	TopicHeatbeat = filepath.Join(TopicRoot, "HEATBEAT")
+	TopicHeartBeat = filepath.Join(TopicRoot, "HEARTBEAT")
 	TopicCTLPrefix = filepath.Join(TopicRoot, "CTL")
 	TopicDataPrefix = filepath.Join(TopicRoot, "DATA")
 }

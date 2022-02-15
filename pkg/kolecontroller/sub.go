@@ -22,15 +22,12 @@ import (
 	"github.com/openyurtio/kole/pkg/data"
 )
 
-func (c *InfEdgeController) Mqtt3SubEdgeHeatBeat(client outmqtt.Client, message outmqtt.Message) {
-	//go func(message outmqtt.Message) {
-	hb, err := data.UnmarshalPayloadToHeatBeat(message.Payload())
+func (c *KoleController) Mqtt3SubEdgeHeartBeat(client outmqtt.Client, message outmqtt.Message) {
+	hb, err := data.UnmarshalPayloadToHeartBeat(message.Payload())
 	if err != nil {
-		klog.Errorf("UnmarshalPayloadToHeatBeat error %v", err)
+		klog.Errorf("UnmarshalPayloadToHeartBeat error %v", err)
 		return
 	}
-	c.ConsumeHeatBeatDirect(hb)
-	//c.HeatBeatQueue <- hb
+	c.ConsumeHeartBeatDirect(hb)
 	klog.V(5).Infof("sub heatbeat topic %s Name %s State %s", message.Topic(), hb.Name, hb.State)
-	//}(mes)
 }

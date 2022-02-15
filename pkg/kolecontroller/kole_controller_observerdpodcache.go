@@ -25,17 +25,17 @@ import (
 type ObserverdPodsCache struct {
 	*sync.RWMutex
 	// nodeName / pod key / Pod
-	Cache map[string]map[string]*data.HeatBeatPod
+	Cache map[string]map[string]*data.HeartBeatPod
 }
 
-func (c *ObserverdPodsCache) SafeSetHeatBeat(hb *data.HeatBeat) {
+func (c *ObserverdPodsCache) SafeSetHeartBeat(hb *data.HeartBeat) {
 	c.Lock()
 	_, ok := c.Cache[hb.Name]
 	if !ok {
-		c.Cache[hb.Name] = make(map[string]*data.HeatBeatPod)
+		c.Cache[hb.Name] = make(map[string]*data.HeartBeatPod)
 	}
 	for _, hbp := range hb.Pods {
-		c.Cache[hb.Name][hbp.Key()] = &data.HeatBeatPod{
+		c.Cache[hb.Name][hbp.Key()] = &data.HeartBeatPod{
 			Hash:      hbp.Hash,
 			Name:      hbp.Name,
 			NameSpace: hbp.NameSpace,
@@ -44,7 +44,7 @@ func (c *ObserverdPodsCache) SafeSetHeatBeat(hb *data.HeatBeat) {
 	}
 	c.Unlock()
 }
-func (c *ObserverdPodsCache) ReadRange(f func(nodeName string, hbPodList map[string]*data.HeatBeatPod)) {
+func (c *ObserverdPodsCache) ReadRange(f func(nodeName string, hbPodList map[string]*data.HeartBeatPod)) {
 	c.RLock()
 	for nodeName, _ := range c.Cache {
 		f(nodeName, c.Cache[nodeName])

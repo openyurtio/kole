@@ -24,18 +24,18 @@ import (
 	"github.com/openyurtio/kole/pkg/data"
 )
 
-func InitMockHeatBeat(hostname string, seqNum uint64) *data.HeatBeat {
+func InitMockHeartBeat(hostname string, seqNum uint64) *data.HeartBeat {
 	labels := make(map[string]string)
 	labels["HostName"] = hostname
 
-	return &data.HeatBeat{
+	return &data.HeartBeat{
 		SeqNum:     seqNum,
 		TimeStamp:  time.Now().Unix(),
 		Identifier: fmt.Sprintf("%v", uuid.New()),
-		State:      data.HeatBeatRegistering,
+		State:      data.HeartBeatRegistering,
 		Name:       hostname,
 		Labels:     labels,
-		Status: &data.HeatBeatStatus{
+		Status: &data.HeartBeatStatus{
 			Addresses: []*data.Address{
 				{
 					Address: "127.0.0.1",
