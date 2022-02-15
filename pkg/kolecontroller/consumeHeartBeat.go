@@ -94,7 +94,7 @@ func (c *KoleController) ConsumeSingleHeartBeat(hb *data.HeartBeat) []*data.Pod 
 		}
 	})
 
-	c.HeartBeatCache.ReceiveHeartBeat(hb, c.InfDaemonSetController)
+	c.HeartBeatCache.ReceiveHeartBeat(hb, c.KoleDaemonSetController)
 
 	return sync_pods
 }

@@ -192,83 +192,6 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.7.0
   creationTimestamp: null
-  name: infdaemonsets.lite.openyurt.io
-spec:
-  group: lite.openyurt.io
-  names:
-    categories:
-    - all
-    kind: InfDaemonSet
-    listKind: InfDaemonSetList
-    plural: infdaemonsets
-    shortNames:
-    - infd
-    singular: infdaemonset
-  scope: Namespaced
-  versions:
-  - name: v1alpha1
-    schema:
-      openAPIV3Schema:
-        description: InfDaemonSet is
-        properties:
-          apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-            type: string
-          kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-            type: string
-          metadata:
-            type: object
-          spec:
-            properties:
-              command:
-                items:
-                  type: string
-                type: array
-              image:
-                type: string
-              nodeSelector:
-                additionalProperties:
-                  type: string
-                type: object
-            type: object
-          status:
-            properties:
-              currentNumberScheduled:
-                type: integer
-              desiredNumberScheduled:
-                type: integer
-              numberReady:
-                type: integer
-            required:
-            - currentNumberScheduled
-            - desiredNumberScheduled
-            - numberReady
-            type: object
-        type: object
-    served: true
-    storage: true
-    subresources:
-      status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
----
-
----
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
-metadata:
-  annotations:
-    controller-gen.kubebuilder.io/version: v0.7.0
-  creationTimestamp: null
   name: infedgenodes.lite.openyurt.io
 spec:
   group: lite.openyurt.io
@@ -760,6 +683,83 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.7.0
   creationTimestamp: null
+  name: koledaemonsets.lite.openyurt.io
+spec:
+  group: lite.openyurt.io
+  names:
+    categories:
+    - all
+    kind: KoleDaemonSet
+    listKind: KoleDaemonSetList
+    plural: koledaemonsets
+    shortNames:
+    - kd
+    singular: koledaemonset
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: KoleDaemonSet is
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            properties:
+              command:
+                items:
+                  type: string
+                type: array
+              image:
+                type: string
+              nodeSelector:
+                additionalProperties:
+                  type: string
+                type: object
+            type: object
+          status:
+            properties:
+              currentNumberScheduled:
+                type: integer
+              desiredNumberScheduled:
+                type: integer
+              numberReady:
+                type: integer
+            required:
+            - currentNumberScheduled
+            - desiredNumberScheduled
+            - numberReady
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.7.0
+  creationTimestamp: null
   name: querynodes.lite.openyurt.io
 spec:
   group: lite.openyurt.io
@@ -793,21 +793,31 @@ spec:
             type: object
           spec:
             properties:
+              nodeLabelSelector:
+                type: string
               nodeName:
                 description: NodePoolSelector is a label query over nodepool that
                   should match the replica count. It must match the nodepool's labels.
                 type: string
+              nodeSelector:
+                additionalProperties:
+                  type: string
+                type: object
+              nodeStatus:
+                type: string
             type: object
           status:
-            properties:
-              infEdgeNodeName:
-                type: string
-              status:
-                type: string
-            required:
-            - infEdgeNodeName
-            - status
-            type: object
+            items:
+              properties:
+                infEdgeNodeName:
+                  type: string
+                status:
+                  type: string
+              required:
+              - infEdgeNodeName
+              - status
+              type: object
+            type: array
         type: object
     served: true
     storage: true
@@ -897,7 +907,7 @@ rules:
 - apiGroups:
   - lite.openyurt.io
   resources:
-  - infdaemonsets
+  - koledaemonsets
   verbs:
   - create
   - delete
@@ -909,7 +919,7 @@ rules:
 - apiGroups:
   - lite.openyurt.io
   resources:
-  - infdaemonsets/status
+  - koledaemonsets/status
   verbs:
   - get
   - patch

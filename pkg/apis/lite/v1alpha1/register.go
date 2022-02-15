@@ -22,7 +22,6 @@ import (
 )
 
 // SchemeGroupVersion is group version used to register these objects
-// 注册自己的自定义资源
 var SchemeGroupVersion = schema.GroupVersion{Group: "lite.openyurt.io", Version: "v1alpha1"}
 
 // Kind takes an unqualified kind and returns back a Group qualified GroupKind
@@ -42,7 +41,6 @@ var (
 
 // Adds the list of known types to Scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
-	//注意,添加了foo/foolist 两个资源到scheme
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&Summary{},
 		&SummaryList{},
@@ -50,8 +48,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&InfEdgeNodeList{},
 		&QueryNode{},
 		&QueryNodeList{},
-		&InfDaemonSet{},
-		&InfDaemonSetList{},
+		&KoleDaemonSet{},
+		&KoleDaemonSetList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

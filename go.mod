@@ -18,6 +18,7 @@ require (
 	github.com/golang/snappy v0.0.3
 	github.com/google/uuid v1.3.0
 	github.com/googleapis/gnostic v0.5.5 // indirect
+	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/onsi/gomega v1.14.0 // indirect
 	github.com/pierrec/lz4 v2.6.1+incompatible

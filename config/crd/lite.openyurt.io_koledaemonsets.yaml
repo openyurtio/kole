@@ -6,24 +6,24 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.7.0
   creationTimestamp: null
-  name: infdaemonsets.lite.openyurt.io
+  name: koledaemonsets.lite.openyurt.io
 spec:
   group: lite.openyurt.io
   names:
     categories:
     - all
-    kind: InfDaemonSet
-    listKind: InfDaemonSetList
-    plural: infdaemonsets
+    kind: KoleDaemonSet
+    listKind: KoleDaemonSetList
+    plural: koledaemonsets
     shortNames:
-    - infd
-    singular: infdaemonset
+    - kd
+    singular: koledaemonset
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: InfDaemonSet is
+        description: KoleDaemonSet is
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation

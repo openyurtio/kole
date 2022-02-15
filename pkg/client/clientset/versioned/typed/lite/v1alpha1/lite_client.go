@@ -26,8 +26,8 @@ import (
 
 type LiteV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	InfDaemonSetsGetter
 	InfEdgeNodesGetter
+	KoleDaemonSetsGetter
 	QueryNodesGetter
 	SummariesGetter
 }
@@ -37,12 +37,12 @@ type LiteV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *LiteV1alpha1Client) InfDaemonSets(namespace string) InfDaemonSetInterface {
-	return newInfDaemonSets(c, namespace)
-}
-
 func (c *LiteV1alpha1Client) InfEdgeNodes(namespace string) InfEdgeNodeInterface {
 	return newInfEdgeNodes(c, namespace)
+}
+
+func (c *LiteV1alpha1Client) KoleDaemonSets(namespace string) KoleDaemonSetInterface {
+	return newKoleDaemonSets(c, namespace)
 }
 
 func (c *LiteV1alpha1Client) QueryNodes(namespace string) QueryNodeInterface {
