@@ -66,15 +66,15 @@ func NewCreateMqttMessage(config *options.CreateMqttMessageFlags) (*CreateMqttMe
 	return t, nil
 }
 
-func initHeatBeat() *data.HeatBeat {
+func initHeartBeat() *data.HeartBeat {
 	labels := make(map[string]string)
 	labels["HostName"] = "testtttttttttttttttttt"
 
-	beat := &data.HeatBeat{
+	beat := &data.HeartBeat{
 		SeqNum:     0,
 		TimeStamp:  time.Now().Unix(),
 		Identifier: fmt.Sprintf("%v", uuid.New()),
-		State:      data.HeatBeatRegistering,
+		State:      data.HeartBeatRegistering,
 		Name:       "testtttttttttttttttttt",
 		Labels:     labels,
 	}
@@ -83,7 +83,7 @@ func initHeatBeat() *data.HeatBeat {
 }
 
 func (n *CreateMqttMessages) Run() error {
-	hb := initHeatBeat()
+	hb := initHeartBeat()
 
 	send := func(i int) error {
 		hb.Name = fmt.Sprintf("name-%d", i)

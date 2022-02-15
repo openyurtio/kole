@@ -29,10 +29,10 @@ import (
 	"github.com/openyurtio/kole/pkg/util"
 )
 
-func (l *LiteKubelet) initHeatBeat() *data.HeatBeat {
-	hb := util.InitMockHeatBeat(l.HostnameOverride, l.SeqNum)
+func (l *LiteKubelet) initHeartBeat() *data.HeartBeat {
+	hb := util.InitMockHeartBeat(l.HostnameOverride, l.SeqNum)
 	/*
-		pods := make([]*data.HeatBeatPod, 0, 10)
+		pods := make([]*data.HeartBeatPod, 0, 10)
 		hash, err := kolecontroller.Md5PodSpec(&v1alpha1.PodSpec{
 			Image:        "nginx.",
 			Command:      []string{"/bin/bash", "start"},
@@ -42,7 +42,7 @@ func (l *LiteKubelet) initHeatBeat() *data.HeatBeat {
 			return hb
 		}
 		for i := 0; i < 10; i++ {
-			p := &data.HeatBeatPod{
+			p := &data.HeartBeatPod{
 				Hash:      hash,
 				Name:      fmt.Sprintf("%s", uuid.New()),
 				NameSpace: "infedge",
@@ -55,9 +55,9 @@ func (l *LiteKubelet) initHeatBeat() *data.HeatBeat {
 	return hb
 }
 
-func (l *LiteKubelet) sendHeatBeat(hb *data.HeatBeat, qos byte, needACK bool) error {
+func (l *LiteKubelet) sendHeartBeat(hb *data.HeartBeat, qos byte, needACK bool) error {
 
-	topic := util.TopicHeatbeat
+	topic := util.TopicHeartBeat
 
 	if err := l.MessageHandler.PublishData(context.Background(), topic, 0, false, hb); err != nil {
 		return err
@@ -73,7 +73,7 @@ func (l *LiteKubelet) sendHeatBeat(hb *data.HeatBeat, qos byte, needACK bool) er
 		if !ok {
 			return fmt.Errorf("registering time out: node %s indentifier %s send topic %s, state %s", hb.Name, hb.Identifier, hb.State, topic)
 		}
-		if !ack.(*data.HeatBeatACK).Registerd {
+		if !ack.(*data.HeartBeatACK).Registerd {
 			return fmt.Errorf("ack data is false: node %s indentifier %s send topic %s, state %s", hb.Name, hb.Identifier, hb.State, topic)
 		}
 		klog.V(4).Infof("#### data len %d , registering successful node %s", len(hbdata), hb.Name)
@@ -83,34 +83,33 @@ func (l *LiteKubelet) sendHeatBeat(hb *data.HeatBeat, qos byte, needACK bool) er
 	return nil
 }
 
-func (l *LiteKubelet) registeringHeatBeat(needAck bool) (*data.HeatBeat, error) {
-	hb := l.initHeatBeat()
-	if err := l.sendHeatBeat(hb, 1, needAck); err != nil {
+func (l *LiteKubelet) registeringHeartBeat(needAck bool) (*data.HeartBeat, error) {
+	hb := l.initHeartBeat()
+	if err := l.sendHeartBeat(hb, 1, needAck); err != nil {
 		return nil, err
 	}
 	return hb, nil
 }
 
-func (l *LiteKubelet) registerdHeatBeat(hb *data.HeatBeat) {
-	hb.State = data.HeatBeatRegisterd
+func (l *LiteKubelet) registerdHeartBeat(hb *data.HeartBeat) {
+	hb.State = data.HeartBeatRegisterd
 	hb.TimeStamp = time.Now().Unix()
 	hb.Identifier = fmt.Sprintf("%v", uuid.New())
-	l.sendHeatBeat(hb, 0, false)
+	l.sendHeartBeat(hb, 0, false)
 }
 
-func (l *LiteKubelet) syncHeatBeat(hb *data.HeatBeat) {
-	// 更新本地 的pod 信息
+func (l *LiteKubelet) syncHeartBeat(hb *data.HeartBeat) {
 	localPodsLock.Lock()
 	defer localPodsLock.Unlock()
 
-	pods := make([]*data.HeatBeatPod, 0, 20)
+	pods := make([]*data.HeartBeatPod, 0, 20)
 	for _, p := range localPods {
-		pp := &data.HeatBeatPod{
+		pp := &data.HeartBeatPod{
 			Hash:      p.Hash,
 			Name:      p.Name,
 			NameSpace: p.NameSpace,
-			Status: &data.HeatBeatPodStatus{
-				Phase: data.HeatBeatPodStatusRunning,
+			Status: &data.HeartBeatPodStatus{
+				Phase: data.HeartBeatPodStatusRunning,
 			},
 		}
 		pods = append(pods, pp)
@@ -119,15 +118,15 @@ func (l *LiteKubelet) syncHeatBeat(hb *data.HeatBeat) {
 	return
 }
 
-func (l *LiteKubelet) registerdHeatBeatLoop(hb *data.HeatBeat) {
+func (l *LiteKubelet) registerdHeartBeatLoop(hb *data.HeartBeat) {
 	ticker := time.NewTicker(time.Second * time.Duration(l.HeartBeatInterval))
 	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ticker.C:
-			l.syncHeatBeat(hb)
-			l.registerdHeatBeat(hb)
+			l.syncHeartBeat(hb)
+			l.registerdHeartBeat(hb)
 		}
 	}
 }

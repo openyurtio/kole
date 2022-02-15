@@ -47,7 +47,7 @@ type InfDaemonSetController struct {
 	kubeclient versioned.Interface
 	queue      workqueue.RateLimitingInterface       //workqueue 的引用
 	informer   externalV1alpha1.InfDaemonSetInformer // Informer 的引用
-	infEdgeCtl *InfEdgeController
+	koleCtl    *KoleController
 	lister     listV1alpha1.InfDaemonSetLister
 }
 
@@ -63,7 +63,7 @@ func Md5PodSpec(obj *v1alpha1.PodSpec) (string, error) {
 }
 
 // NewInfDaemonSetController creates a new InfDaemonSetController.
-func NewInfDaemonSetController(client versioned.Interface, informer externalV1alpha1.InfDaemonSetInformer, infedgeCtl *InfEdgeController) (*InfDaemonSetController, error) {
+func NewInfDaemonSetController(client versioned.Interface, informer externalV1alpha1.InfDaemonSetInformer, koleCtl *KoleController) (*InfDaemonSetController, error) {
 
 	queue := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 	/*
@@ -78,7 +78,7 @@ func NewInfDaemonSetController(client versioned.Interface, informer externalV1al
 		informer:   informer,
 		queue:      queue,
 		lister:     informer.Lister(),
-		infEdgeCtl: infedgeCtl,
+		koleCtl:    koleCtl,
 	}
 
 	informer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -100,8 +100,8 @@ func (c *InfDaemonSetController) AddHost(hostName string) {
 		return
 	}
 
-	c.infEdgeCtl.DesiredPodsCache.SafeOperate(func() {
-		if _, ok := c.infEdgeCtl.DesiredPodsCache.Cache[hostName]; !ok {
+	c.koleCtl.DesiredPodsCache.SafeOperate(func() {
+		if _, ok := c.koleCtl.DesiredPodsCache.Cache[hostName]; !ok {
 			desiredPods := make(map[string]*data.Pod)
 			for _, ds := range ids {
 				// Todo add node selector
@@ -120,7 +120,7 @@ func (c *InfDaemonSetController) AddHost(hostName string) {
 				desiredPods[podKey] = np
 				needPublish = append(needPublish, np)
 			}
-			c.infEdgeCtl.DesiredPodsCache.Cache[hostName] = desiredPods
+			c.koleCtl.DesiredPodsCache.Cache[hostName] = desiredPods
 		}
 	})
 
@@ -131,7 +131,7 @@ func (c *InfDaemonSetController) AddHost(hostName string) {
 	go func() {
 		topic := filepath.Join(util.TopicDataPrefix, hostName)
 		for _, p := range needPublish {
-			if err := c.infEdgeCtl.MessageHandler.PublishData(context.Background(), topic, 0, false, p); err != nil {
+			if err := c.koleCtl.MessageHandler.PublishData(context.Background(), topic, 0, false, p); err != nil {
 				klog.Errorf("Mqtt5 publish error %v", err)
 				return
 			}
@@ -158,7 +158,7 @@ func (c *InfDaemonSetController) addUpdateInfDaemonset(ds *v1alpha1.InfDaemonSet
 		return
 	}
 
-	c.infEdgeCtl.DesiredPodsCache.WriteRange(func(nodeName string, desiredPodsMap map[string]*data.Pod) {
+	c.koleCtl.DesiredPodsCache.WriteRange(func(nodeName string, desiredPodsMap map[string]*data.Pod) {
 		// Todo add node selector
 		newP := &data.Pod{
 			Hash:      hash,
@@ -178,7 +178,7 @@ func (c *InfDaemonSetController) addUpdateInfDaemonset(ds *v1alpha1.InfDaemonSet
 
 		for topic, podList := range needPublish {
 			for i, _ := range podList {
-				if err := c.infEdgeCtl.MessageHandler.PublishData(context.Background(), topic, 0, false, podList[i]); err != nil {
+				if err := c.koleCtl.MessageHandler.PublishData(context.Background(), topic, 0, false, podList[i]); err != nil {
 					klog.Errorf("Mqtt5 publish error %v", err)
 					return
 				}
@@ -221,7 +221,7 @@ func (c *InfDaemonSetController) deleteInfDaemonset(obj interface{}) {
 	ds := obj.(*v1alpha1.InfDaemonSet)
 	klog.V(4).Infof("Delete InfDaemonSet %s", ds.Name)
 
-	c.infEdgeCtl.DesiredPodsCache.WriteRange(func(nodeName string, desiredPodsMap map[string]*data.Pod) {
+	c.koleCtl.DesiredPodsCache.WriteRange(func(nodeName string, desiredPodsMap map[string]*data.Pod) {
 		// Todo add node selector
 		podKey := generateInfDamonSetPodKey(ds)
 		klog.V(4).Infof("Delete InfDaemonSet pod from node %s , pod key %s", nodeName, podKey)
@@ -238,7 +238,7 @@ func (c *InfDaemonSetController) deleteInfDaemonset(obj interface{}) {
 		dataTopic := filepath.Join(util.TopicDataPrefix, nodeName)
 
 		go func() {
-			if err := c.infEdgeCtl.MessageHandler.PublishData(context.Background(), dataTopic, 0, false, deletePod); err != nil {
+			if err := c.koleCtl.MessageHandler.PublishData(context.Background(), dataTopic, 0, false, deletePod); err != nil {
 				klog.Errorf("Mqtt5 publish error %v", err)
 				return
 			}
@@ -268,7 +268,6 @@ func (c *InfDaemonSetController) Run(threadiness int, stopCh chan struct{}) {
 
 	klog.Info("Starting InfDaemonSet controller")
 
-	// 启动多个 worker 处理 workqueue 中的对象
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
@@ -278,21 +277,16 @@ func (c *InfDaemonSetController) Run(threadiness int, stopCh chan struct{}) {
 }
 
 func (c *InfDaemonSetController) runWorker() {
-	// 启动无限循环，接收并处理消息
 	for c.processNextItem() {
-
 	}
 }
 
-// 从 workqueue 中获取对象，并打印信息。
 func (c *InfDaemonSetController) processNextItem() bool {
 	key, shutdown := c.queue.Get()
-	// 退出
 	if shutdown {
 		return false
 	}
 
-	// 标记此key已经处理
 	defer c.queue.Done(key)
 
 	err := c.syncProcess(key.(string))
@@ -327,7 +321,6 @@ func (c *InfDaemonSetController) handleErr(err error, key interface{}) {
 	klog.Infof("Dropping InfDaemonSet %q out of the queue: %v", key, err)
 }
 
-// 获取 key 对应的 object，并打印相关信息
 func (c *InfDaemonSetController) syncProcess(key string) error {
 
 	startTime := time.Now()
@@ -357,13 +350,13 @@ func (c *InfDaemonSetController) syncProcess(key string) error {
 	}
 	var currentNumberScheduled, podready, desirednum int
 
-	desirednum = c.infEdgeCtl.DesiredPodsCache.Len()
+	desirednum = c.koleCtl.DesiredPodsCache.Len()
 
-	c.infEdgeCtl.ObserverdPodsCache.ReadRange(func(nodeName string, observerdPods map[string]*data.HeatBeatPod) {
+	c.koleCtl.ObserverdPodsCache.ReadRange(func(nodeName string, observerdPods map[string]*data.HeartBeatPod) {
 		for key, pod := range observerdPods {
 			if podKey == key && hash == pod.Hash {
 				currentNumberScheduled++
-				if pod.Status.Phase == data.HeatBeatPodStatusRunning {
+				if pod.Status.Phase == data.HeartBeatPodStatusRunning {
 					podready++
 				}
 			}

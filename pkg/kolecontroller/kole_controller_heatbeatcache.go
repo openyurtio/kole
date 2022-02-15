@@ -23,25 +23,25 @@ import (
 	"github.com/openyurtio/kole/pkg/data"
 )
 
-type HeatBeatCache struct {
+type HeartBeatCache struct {
 	*sync.RWMutex
-	Cache map[string]*data.HeatBeat
+	Cache map[string]*data.HeartBeat
 }
 
-func (c *HeatBeatCache) SafeReadOperate(f func()) {
+func (c *HeartBeatCache) SafeReadOperate(f func()) {
 	c.RLock()
 	f()
 	c.RUnlock()
 }
 
-func (c *HeatBeatCache) ReceiveHeatBeat(hb *data.HeatBeat, daemonSetCtl *InfDaemonSetController) *data.HeatBeatACK {
+func (c *HeartBeatCache) ReceiveHeartBeat(hb *data.HeartBeat, daemonSetCtl *InfDaemonSetController) *data.HeartBeatACK {
 	n := time.Now().Unix()
-	var ack *data.HeatBeatACK
+	var ack *data.HeartBeatACK
 
 	c.Lock()
 
-	if hb.State == data.HeatBeatRegistering {
-		//hb.State = data.HeatBeatRegisterd
+	if hb.State == data.HeartBeatRegistering {
+		//hb.State = data.HeartBeatRegisterd
 		daemonSetCtl.AddHost(hb.Name)
 	}
 

@@ -24,22 +24,22 @@ import (
 	"github.com/openyurtio/kole/pkg/util"
 )
 
-func (c *InfEdgeController) Mqtt5CreateSubscribes() []*message.SingleSubcribe {
+func (c *KoleController) Mqtt5CreateSubscribes() []*message.SingleSubcribe {
 
 	subs := make([]*message.SingleSubcribe, 0, 2)
 	//HB
 	subs = append(subs, &message.SingleSubcribe{
-		Topic: util.TopicHeatbeat,
+		Topic: util.TopicHeartBeat,
 		Option: paho.SubscribeOptions{
 			QoS: 1,
 		},
 		Handler: func(publish *paho.Publish) {
-			hb, err := data.UnmarshalPayloadToHeatBeat(publish.Payload)
+			hb, err := data.UnmarshalPayloadToHeartBeat(publish.Payload)
 			if err != nil {
-				klog.Errorf("UnmarshalPayloadToHeatBeat error %v", err)
+				klog.Errorf("UnmarshalPayloadToHeartBeat error %v", err)
 				return
 			}
-			c.ConsumeHeatBeatDirect(hb)
+			c.ConsumeHeartBeatDirect(hb)
 			klog.V(5).Infof("sub heatbeat topic %s Name %s State %s", publish.Topic, hb.Name, hb.State)
 		},
 	})

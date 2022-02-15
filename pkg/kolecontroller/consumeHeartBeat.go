@@ -26,9 +26,9 @@ import (
 	"github.com/openyurtio/kole/pkg/util"
 )
 
-func (c *InfEdgeController) ConsumeHeatBeatDirect(hb *data.HeatBeat) {
+func (c *KoleController) ConsumeHeartBeatDirect(hb *data.HeartBeat) {
 
-	sync_pods := c.ConsumeSingleHeatBeat(hb)
+	sync_pods := c.ConsumeSingleHeartBeat(hb)
 
 	dataTopic := filepath.Join(util.TopicDataPrefix, hb.Name)
 
@@ -42,18 +42,17 @@ func (c *InfEdgeController) ConsumeHeatBeatDirect(hb *data.HeatBeat) {
 	}(dataTopic, sync_pods)
 }
 
-func (c *InfEdgeController) ConsumeSingleHeatBeat(hb *data.HeatBeat) []*data.Pod {
+func (c *KoleController) ConsumeSingleHeartBeat(hb *data.HeartBeat) []*data.Pod {
 	c.ReceiveNum++
 
-	klog.V(5).Infof("Receive heatbeat Indentifier[%s] Name[%s] State[%s]", hb.Identifier, hb.Name, hb.State)
+	klog.V(5).Infof("Received heatbeat Indentifier[%s] Name[%s] State[%s]", hb.Identifier, hb.Name, hb.State)
 
-	if !c.HeatBeatFilter.SetHeatBeat(hb) {
+	if !c.HeartBeatFilter.SetHeartBeat(hb) {
 		return []*data.Pod{}
 	}
 
-	c.ObserverdPodsCache.SafeSetHeatBeat(hb)
+	c.ObserverdPodsCache.SafeSetHeartBeat(hb)
 
-	// 获得的与期望的比较
 	sync_pods := make([]*data.Pod, 0, 20)
 
 	c.DesiredPodsCache.SafeOperate(func() {
@@ -95,7 +94,7 @@ func (c *InfEdgeController) ConsumeSingleHeatBeat(hb *data.HeatBeat) []*data.Pod
 		}
 	})
 
-	c.HeatBeatCache.ReceiveHeatBeat(hb, c.InfDaemonSetController)
+	c.HeartBeatCache.ReceiveHeartBeat(hb, c.InfDaemonSetController)
 
 	return sync_pods
 }

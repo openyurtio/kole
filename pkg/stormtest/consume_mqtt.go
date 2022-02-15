@@ -57,9 +57,9 @@ func NewConsumeMqtt(config *options.ConsumeMqttFlags) (*ConsumeMqtt, error) {
 }
 
 func (n *ConsumeMqtt) testSub(client outmqtt.Client, message outmqtt.Message) {
-	hb, err := data.UnmarshalPayloadToHeatBeat(message.Payload())
+	hb, err := data.UnmarshalPayloadToHeartBeat(message.Payload())
 	if err != nil {
-		klog.Errorf("UnmarshalPayloadToHeatBeat error %v", err)
+		klog.Errorf("UnmarshalPayloadToHeartBeat error %v", err)
 		return
 	}
 	klog.Infof("Receive Message %s", hb.Name)

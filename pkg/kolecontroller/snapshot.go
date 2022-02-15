@@ -35,13 +35,13 @@ import (
 	"github.com/openyurtio/kole/pkg/util"
 )
 
-func (c *InfEdgeController) HeatBeatStatisticalLoop() {
+func (c *KoleController) HeartBeatStatisticalLoop() {
 	var interval time.Duration = 60 * 2
 	time.Sleep(time.Second * interval)
-	//wait.Forever(c.HeatBeatStatistical, time.Second*interval)
+	//wait.Forever(c.HeartBeatStatistical, time.Second*interval)
 }
 
-func (c *InfEdgeController) SnapShotLoop() {
+func (c *KoleController) SnapShotLoop() {
 
 	ticker := time.NewTicker(time.Second * time.Duration(c.SnapshotInterval))
 	defer ticker.Stop()
@@ -54,11 +54,11 @@ func (c *InfEdgeController) SnapShotLoop() {
 	}
 }
 
-func (c *InfEdgeController) GetReceiveNum() {
+func (c *KoleController) GetReceiveNum() {
 	klog.V(4).Infof("Get HB num %d", c.ReceiveNum)
 }
 
-func (c *InfEdgeController) snapShot() {
+func (c *KoleController) snapShot() {
 
 	klog.Infof("Snapshot loop start ...")
 
@@ -68,25 +68,25 @@ func (c *InfEdgeController) snapShot() {
 	var hdata []byte
 	var err error
 
-	ackLists := make([]*data.HeatBeatACK, 0, 10000)
+	ackLists := make([]*data.HeartBeatACK, 0, 10000)
 
 	n := time.Now().Unix()
-	c.HeatBeatCache.SafeReadOperate(func() {
+	c.HeartBeatCache.SafeReadOperate(func() {
 		if c.FirstSnapTime == 0 {
 			c.FirstSnapTime = n
 		}
 
-		for _, hb := range c.HeatBeatCache.Cache {
+		for _, hb := range c.HeartBeatCache.Cache {
 
 			subTime := n - hb.LasterTimeStamp
-			if hb.State == data.HeatBeatRegisterd && subTime >= c.HeatBeatTimeOut {
+			if hb.State == data.HeartBeatRegisterd && subTime >= c.HeartBeatTimeOut {
 				klog.V(5).Infof("Nodename %s set offline, offline Time %d s", hb.Name, subTime)
-				hb.State = data.HeatBeatOffline
+				hb.State = data.HeartBeatOffline
 			}
 
-			if hb.State == data.HeatBeatRegistering {
-				hb.State = data.HeatBeatRegisterd
-				ackLists = append(ackLists, &data.HeatBeatACK{
+			if hb.State == data.HeartBeatRegistering {
+				hb.State = data.HeartBeatRegisterd
+				ackLists = append(ackLists, &data.HeartBeatACK{
 					Identifier: hb.Identifier,
 					Registerd:  true,
 					NodeName:   hb.Name,
@@ -113,17 +113,17 @@ func (c *InfEdgeController) snapShot() {
 			}
 
 			switch hb.State {
-			case data.HeatBeatRegistering:
+			case data.HeartBeatRegistering:
 				registeringNum++
-			case data.HeatBeatRegisterd:
+			case data.HeartBeatRegisterd:
 				registedNum++
-			case data.HeatBeatOffline:
+			case data.HeartBeatOffline:
 				offlineNum++
 			}
 		}
-		hdata, err = json.Marshal(c.HeatBeatCache.Cache)
+		hdata, err = json.Marshal(c.HeartBeatCache.Cache)
 		if err != nil {
-			klog.Errorf("Snapshot Loop: marshal heatBeatCache error %v", hdata)
+			klog.Errorf("Snapshot Loop: marshal heartBeatCache error %v", hdata)
 			return
 		}
 	})
@@ -158,10 +158,10 @@ func (c *InfEdgeController) snapShot() {
 	klog.Infof("Snapshot Loop end ...")
 }
 
-func (c *InfEdgeController) syncAcks(acks []*data.HeatBeatACK) {
+func (c *KoleController) syncAcks(acks []*data.HeartBeatACK) {
 
 	for i, _ := range acks {
-		go func(ack *data.HeatBeatACK) {
+		go func(ack *data.HeartBeatACK) {
 			ctlTopic := filepath.Join(util.TopicCTLPrefix, ack.NodeName)
 			if err := c.MessageHandler.PublishAck(context.Background(), ctlTopic, 0, false, ack); err != nil {
 				klog.Errorf("Mqtt5 publish error %v", err)
@@ -172,7 +172,7 @@ func (c *InfEdgeController) syncAcks(acks []*data.HeatBeatACK) {
 	}
 }
 
-func (c *InfEdgeController) syncSummaris(hdata []byte) {
+func (c *KoleController) syncSummaris(hdata []byte) {
 	snapedSummarisNames := make([]string, 0, 1024)
 	namesLock := &sync.Mutex{}
 
@@ -258,18 +258,18 @@ func (c *InfEdgeController) syncSummaris(hdata []byte) {
 }
 
 func LoadSnapShot(liteClient versioned.Interface, config *options.KoleControllerFlags, process DataProcesser) (
-	map[string]*data.HeatBeat,
+	map[string]*data.HeartBeat,
 	map[string]*FilterInfo,
 	[]string,
-	map[string]map[string]*data.HeatBeatPod,
+	map[string]map[string]*data.HeartBeatPod,
 	map[string]*v1alpha1.QueryNodeStatus,
 	error) {
 
 	klog.Infof("Load snapshot start ...")
 
-	heatBeatCache := make(map[string]*data.HeatBeat)
-	heatBeatFilter := make(map[string]*FilterInfo)
-	observerdPods := make(map[string]map[string]*data.HeatBeatPod)
+	heartBeatCache := make(map[string]*data.HeartBeat)
+	heartBeatFilter := make(map[string]*FilterInfo)
+	observerdPods := make(map[string]map[string]*data.HeartBeatPod)
 	nodeStatus := make(map[string]*v1alpha1.QueryNodeStatus)
 	// get current summery crd
 
@@ -328,19 +328,19 @@ func LoadSnapShot(liteClient versioned.Interface, config *options.KoleController
 
 	if total == 0 || len(hbData) == 0 {
 		klog.Infof("Can not get any summary cr")
-		return heatBeatCache, heatBeatFilter, snapedName, observerdPods, nodeStatus, nil
+		return heartBeatCache, heartBeatFilter, snapedName, observerdPods, nodeStatus, nil
 	}
 
 	if process != nil {
 		hbData, _ = process.UnCompress(hbData)
 	}
 	// TODO 可以使用fast json
-	if err := json.Unmarshal(hbData, &heatBeatCache); err != nil {
+	if err := json.Unmarshal(hbData, &heartBeatCache); err != nil {
 		klog.Errorf("unmarshal error %v", err)
 		return nil, nil, snapedName, nil, nil, err
 	}
-	for i, hb := range heatBeatCache {
-		heatBeatFilter[i] = &FilterInfo{
+	for i, hb := range heartBeatCache {
+		heartBeatFilter[i] = &FilterInfo{
 			SeqNum:    hb.SeqNum,
 			TimeStamp: hb.TimeStamp,
 		}
@@ -348,9 +348,9 @@ func LoadSnapShot(liteClient versioned.Interface, config *options.KoleController
 			Status:          hb.State,
 			InfEdgeNodeName: hb.Name,
 		}
-		observerdPods[hb.Name] = make(map[string]*data.HeatBeatPod)
+		observerdPods[hb.Name] = make(map[string]*data.HeartBeatPod)
 		for _, hbp := range hb.Pods {
-			observerdPods[hb.Name][hbp.Key()] = &data.HeatBeatPod{
+			observerdPods[hb.Name][hbp.Key()] = &data.HeartBeatPod{
 				Hash:      hbp.Hash,
 				Name:      hbp.Name,
 				NameSpace: hbp.NameSpace,
@@ -361,5 +361,5 @@ func LoadSnapShot(liteClient versioned.Interface, config *options.KoleController
 	}
 
 	klog.Infof("Load snapshot end ...\n")
-	return heatBeatCache, heatBeatFilter, snapedName, observerdPods, nodeStatus, nil
+	return heartBeatCache, heartBeatFilter, snapedName, observerdPods, nodeStatus, nil
 }
