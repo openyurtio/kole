@@ -18,14 +18,6 @@ limitations under the License.
 
 package v1alpha1
 
-// InfDaemonSetListerExpansion allows custom methods to be added to
-// InfDaemonSetLister.
-type InfDaemonSetListerExpansion interface{}
-
-// InfDaemonSetNamespaceListerExpansion allows custom methods to be added to
-// InfDaemonSetNamespaceLister.
-type InfDaemonSetNamespaceListerExpansion interface{}
-
 // InfEdgeNodeListerExpansion allows custom methods to be added to
 // InfEdgeNodeLister.
 type InfEdgeNodeListerExpansion interface{}
@@ -33,6 +25,14 @@ type InfEdgeNodeListerExpansion interface{}
 // InfEdgeNodeNamespaceListerExpansion allows custom methods to be added to
 // InfEdgeNodeNamespaceLister.
 type InfEdgeNodeNamespaceListerExpansion interface{}
+
+// KoleDaemonSetListerExpansion allows custom methods to be added to
+// KoleDaemonSetLister.
+type KoleDaemonSetListerExpansion interface{}
+
+// KoleDaemonSetNamespaceListerExpansion allows custom methods to be added to
+// KoleDaemonSetNamespaceLister.
+type KoleDaemonSetNamespaceListerExpansion interface{}
 
 // QueryNodeListerExpansion allows custom methods to be added to
 // QueryNodeLister.

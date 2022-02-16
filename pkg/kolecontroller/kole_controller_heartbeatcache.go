@@ -34,7 +34,7 @@ func (c *HeartBeatCache) SafeReadOperate(f func()) {
 	c.RUnlock()
 }
 
-func (c *HeartBeatCache) ReceiveHeartBeat(hb *data.HeartBeat, daemonSetCtl *InfDaemonSetController) *data.HeartBeatACK {
+func (c *HeartBeatCache) ReceiveHeartBeat(hb *data.HeartBeat, daemonSetCtl *KoleDaemonSetController) *data.HeartBeatACK {
 	n := time.Now().Unix()
 	var ack *data.HeartBeatACK
 

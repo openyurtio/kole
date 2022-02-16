@@ -41,14 +41,14 @@ import (
 	"github.com/openyurtio/kole/pkg/util"
 )
 
-const InfDaemonSetHashKey = "openyurt.io.infdaemonset/podspec.hash"
+const KoleDaemonSetHashKey = "openyurt.io.infdaemonset/podspec.hash"
 
-type InfDaemonSetController struct {
+type KoleDaemonSetController struct {
 	kubeclient versioned.Interface
-	queue      workqueue.RateLimitingInterface       //workqueue 的引用
-	informer   externalV1alpha1.InfDaemonSetInformer // Informer 的引用
+	queue      workqueue.RateLimitingInterface
+	informer   externalV1alpha1.KoleDaemonSetInformer
 	koleCtl    *KoleController
-	lister     listV1alpha1.InfDaemonSetLister
+	lister     listV1alpha1.KoleDaemonSetLister
 }
 
 func Md5PodSpec(obj *v1alpha1.PodSpec) (string, error) {
@@ -62,8 +62,8 @@ func Md5PodSpec(obj *v1alpha1.PodSpec) (string, error) {
 	return hex.EncodeToString(m.Sum(nil)), nil
 }
 
-// NewInfDaemonSetController creates a new InfDaemonSetController.
-func NewInfDaemonSetController(client versioned.Interface, informer externalV1alpha1.InfDaemonSetInformer, koleCtl *KoleController) (*InfDaemonSetController, error) {
+// NewKoleDaemonSetController creates a new KoleDaemonSetController.
+func NewKoleDaemonSetController(client versioned.Interface, informer externalV1alpha1.KoleDaemonSetInformer, koleCtl *KoleController) (*KoleDaemonSetController, error) {
 
 	queue := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 	/*
@@ -73,7 +73,7 @@ func NewInfDaemonSetController(client versioned.Interface, informer externalV1al
 		})
 	*/
 
-	dsc := &InfDaemonSetController{
+	dsc := &KoleDaemonSetController{
 		kubeclient: client,
 		informer:   informer,
 		queue:      queue,
@@ -82,15 +82,15 @@ func NewInfDaemonSetController(client versioned.Interface, informer externalV1al
 	}
 
 	informer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc:    dsc.addInfDaemonset,
-		UpdateFunc: dsc.updateInfDaemonset,
-		DeleteFunc: dsc.deleteInfDaemonset,
+		AddFunc:    dsc.addKoleDaemonSet,
+		UpdateFunc: dsc.updateKoleDaemonSet,
+		DeleteFunc: dsc.deleteKoleDaemonSet,
 	})
 
 	return dsc, nil
 }
 
-func (c *InfDaemonSetController) AddHost(hostName string) {
+func (c *KoleDaemonSetController) AddHost(hostName string) {
 	klog.V(4).Infof("Adding Host %s", hostName)
 	// topic/ pod
 	needPublish := make([]*data.Pod, 0, 10240)
@@ -105,7 +105,7 @@ func (c *InfDaemonSetController) AddHost(hostName string) {
 			desiredPods := make(map[string]*data.Pod)
 			for _, ds := range ids {
 				// Todo add node selector
-				podKey := generateInfDamonSetPodKey(ds)
+				podKey := generateKoleDaemonSetPodKey(ds)
 				hash, err := Md5PodSpec(ds.Spec)
 				if err != nil {
 					klog.Errorf("Generage pod spec hash error %v", err)
@@ -113,7 +113,7 @@ func (c *InfDaemonSetController) AddHost(hostName string) {
 				}
 				np := &data.Pod{
 					Hash:      hash,
-					Name:      generateInfDamonSetPodName(ds),
+					Name:      generateKoleDaemonSetPodName(ds),
 					NameSpace: ds.Namespace,
 					Spec:      ds.Spec,
 				}
@@ -139,19 +139,19 @@ func (c *InfDaemonSetController) AddHost(hostName string) {
 	}()
 }
 
-func generateInfDamonSetPodKey(ds *v1alpha1.InfDaemonSet) string {
-	return fmt.Sprintf("%s-%s", ds.Namespace, generateInfDamonSetPodName(ds))
+func generateKoleDaemonSetPodKey(ds *v1alpha1.KoleDaemonSet) string {
+	return fmt.Sprintf("%s-%s", ds.Namespace, generateKoleDaemonSetPodName(ds))
 }
 
-func generateInfDamonSetPodName(ds *v1alpha1.InfDaemonSet) string {
-	return fmt.Sprintf("infdaemonset-%s", ds.Name)
+func generateKoleDaemonSetPodName(ds *v1alpha1.KoleDaemonSet) string {
+	return fmt.Sprintf("koledaemonset-%s", ds.Name)
 }
 
-func (c *InfDaemonSetController) addUpdateInfDaemonset(ds *v1alpha1.InfDaemonSet) {
+func (c *KoleDaemonSetController) addUpdateKoleDaemonSet(ds *v1alpha1.KoleDaemonSet) {
 
 	needPublish := make(map[string][]*data.Pod)
 
-	podKey := generateInfDamonSetPodKey(ds)
+	podKey := generateKoleDaemonSetPodKey(ds)
 	hash, err := Md5PodSpec(ds.Spec)
 	if err != nil {
 		klog.Errorf("Generage pod spec hash error %v", err)
@@ -162,7 +162,7 @@ func (c *InfDaemonSetController) addUpdateInfDaemonset(ds *v1alpha1.InfDaemonSet
 		// Todo add node selector
 		newP := &data.Pod{
 			Hash:      hash,
-			Name:      generateInfDamonSetPodName(ds),
+			Name:      generateKoleDaemonSetPodName(ds),
 			NameSpace: ds.Namespace,
 			Spec:      ds.Spec,
 		}
@@ -187,17 +187,17 @@ func (c *InfDaemonSetController) addUpdateInfDaemonset(ds *v1alpha1.InfDaemonSet
 
 	}()
 }
-func (c *InfDaemonSetController) addInfDaemonset(obj interface{}) {
-	ds := obj.(*v1alpha1.InfDaemonSet)
-	klog.Infof("Adding InfDaemonSet %s time %d", ds.Name, time.Now().Unix())
-	c.addUpdateInfDaemonset(ds)
+func (c *KoleDaemonSetController) addKoleDaemonSet(obj interface{}) {
+	ds := obj.(*v1alpha1.KoleDaemonSet)
+	klog.Infof("Adding KoleDaemonSet %s time %d", ds.Name, time.Now().Unix())
+	c.addUpdateKoleDaemonSet(ds)
 	c.enqueue(ds)
 }
 
-func (c *InfDaemonSetController) updateInfDaemonset(oldObj, newObj interface{}) {
-	oldds := oldObj.(*v1alpha1.InfDaemonSet)
-	ds := newObj.(*v1alpha1.InfDaemonSet)
-	klog.V(4).Infof("Update InfDaemonSet %s", ds.Name)
+func (c *KoleDaemonSetController) updateKoleDaemonSet(oldObj, newObj interface{}) {
+	oldds := oldObj.(*v1alpha1.KoleDaemonSet)
+	ds := newObj.(*v1alpha1.KoleDaemonSet)
+	klog.V(4).Infof("Update KoleDaemonSet %s", ds.Name)
 
 	oldHash, err := Md5PodSpec(oldds.Spec)
 	if err != nil {
@@ -211,20 +211,20 @@ func (c *InfDaemonSetController) updateInfDaemonset(oldObj, newObj interface{}) 
 		return
 	}
 	if oldHash != newHash {
-		c.addUpdateInfDaemonset(ds)
+		c.addUpdateKoleDaemonSet(ds)
 	}
 
 	c.enqueue(ds)
 }
 
-func (c *InfDaemonSetController) deleteInfDaemonset(obj interface{}) {
-	ds := obj.(*v1alpha1.InfDaemonSet)
-	klog.V(4).Infof("Delete InfDaemonSet %s", ds.Name)
+func (c *KoleDaemonSetController) deleteKoleDaemonSet(obj interface{}) {
+	ds := obj.(*v1alpha1.KoleDaemonSet)
+	klog.V(4).Infof("Delete KoleDaemonSet %s", ds.Name)
 
 	c.koleCtl.DesiredPodsCache.WriteRange(func(nodeName string, desiredPodsMap map[string]*data.Pod) {
 		// Todo add node selector
-		podKey := generateInfDamonSetPodKey(ds)
-		klog.V(4).Infof("Delete InfDaemonSet pod from node %s , pod key %s", nodeName, podKey)
+		podKey := generateKoleDaemonSetPodKey(ds)
+		klog.V(4).Infof("Delete KoleDaemonSet pod from node %s , pod key %s", nodeName, podKey)
 		oldP := desiredPodsMap[podKey]
 		deleteT := metav1.Now()
 
@@ -250,7 +250,7 @@ func (c *InfDaemonSetController) deleteInfDaemonset(obj interface{}) {
 	c.enqueue(ds)
 }
 
-func (dsc *InfDaemonSetController) enqueue(ds *v1alpha1.InfDaemonSet) {
+func (dsc *KoleDaemonSetController) enqueue(ds *v1alpha1.KoleDaemonSet) {
 	key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(ds)
 	if err != nil {
 		utilruntime.HandleError(fmt.Errorf("Couldn't get key for object %#v: %v", ds, err))
@@ -261,27 +261,27 @@ func (dsc *InfDaemonSetController) enqueue(ds *v1alpha1.InfDaemonSet) {
 	dsc.queue.Add(key)
 }
 
-func (c *InfDaemonSetController) Run(threadiness int, stopCh chan struct{}) {
+func (c *KoleDaemonSetController) Run(threadiness int, stopCh chan struct{}) {
 	defer utilruntime.HandleCrash()
 
 	defer c.queue.ShutDown()
 
-	klog.Info("Starting InfDaemonSet controller")
+	klog.Info("Starting KoleDaemonSet controller")
 
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
 
 	<-stopCh
-	klog.Warningf("Stopping InfDaemonSet controller")
+	klog.Warningf("Stopping KoleDaemonSet controller")
 }
 
-func (c *InfDaemonSetController) runWorker() {
+func (c *KoleDaemonSetController) runWorker() {
 	for c.processNextItem() {
 	}
 }
 
-func (c *InfDaemonSetController) processNextItem() bool {
+func (c *KoleDaemonSetController) processNextItem() bool {
 	key, shutdown := c.queue.Get()
 	if shutdown {
 		return false
@@ -296,7 +296,7 @@ func (c *InfDaemonSetController) processNextItem() bool {
 }
 
 // handleErr checks if an error happened and makes sure we will retry later.
-func (c *InfDaemonSetController) handleErr(err error, key interface{}) {
+func (c *KoleDaemonSetController) handleErr(err error, key interface{}) {
 	if err == nil {
 		// Forget about the #AddRateLimited history of the key on every successful synchronization.
 		// This ensures that future processing of updates for this key is not delayed because of
@@ -318,10 +318,10 @@ func (c *InfDaemonSetController) handleErr(err error, key interface{}) {
 	c.queue.Forget(key)
 	// Report to an external entity that, even after several retries, we could not successfully process this key
 	utilruntime.HandleError(err)
-	klog.Infof("Dropping InfDaemonSet %q out of the queue: %v", key, err)
+	klog.Infof("Dropping KoleDaemonSet %q out of the queue: %v", key, err)
 }
 
-func (c *InfDaemonSetController) syncProcess(key string) error {
+func (c *KoleDaemonSetController) syncProcess(key string) error {
 
 	startTime := time.Now()
 	defer func() {
@@ -333,16 +333,16 @@ func (c *InfDaemonSetController) syncProcess(key string) error {
 		return err
 	}
 
-	ds, err := c.lister.InfDaemonSets(namespace).Get(name)
+	ds, err := c.lister.KoleDaemonSets(namespace).Get(name)
 	if errors.IsNotFound(err) {
-		klog.Warningf("InfDaemonset has been deleted %v", key)
+		klog.Warningf("KoleDaemonSet has been deleted %v", key)
 		return nil
 	}
 	if err != nil {
 		return fmt.Errorf("unable to retrieve ds %v from store: %v", key, err)
 	}
 
-	podKey := generateInfDamonSetPodKey(ds)
+	podKey := generateKoleDaemonSetPodKey(ds)
 	hash, err := Md5PodSpec(ds.Spec)
 	if err != nil {
 		klog.Errorf("Generage pod spec hash error %v", err)
@@ -365,7 +365,7 @@ func (c *InfDaemonSetController) syncProcess(key string) error {
 
 	needUpdate := false
 	if ds.Status == nil {
-		ds.Status = &v1alpha1.InfDaemonSetStatus{}
+		ds.Status = &v1alpha1.KoleDaemonSetStatus{}
 		needUpdate = true
 	}
 
@@ -380,9 +380,9 @@ func (c *InfDaemonSetController) syncProcess(key string) error {
 	}
 
 	if needUpdate {
-		_, err = c.kubeclient.LiteV1alpha1().InfDaemonSets(ds.Namespace).UpdateStatus(context.Background(), ds, metav1.UpdateOptions{})
+		_, err = c.kubeclient.LiteV1alpha1().KoleDaemonSets(ds.Namespace).UpdateStatus(context.Background(), ds, metav1.UpdateOptions{})
 		if err != nil {
-			klog.Errorf("Update InfDaemonset error %v", err)
+			klog.Errorf("Update KoleDaemonSet error %v", err)
 			return err
 		}
 	}

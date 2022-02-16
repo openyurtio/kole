@@ -20,22 +20,21 @@ import (
 )
 
 // +kubebuilder:object:root=true
-// +kubebuilder:resource:path=infdaemonsets,shortName=infd,categories=all
+// +kubebuilder:resource:path=koledaemonsets,shortName=kd,categories=all
 // +kubebuilder:subresource:status
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// InfDaemonSet is
-type InfDaemonSet struct {
-	metav1.TypeMeta `json:",inline"`
-
+// KoleDaemonSet is
+type KoleDaemonSet struct {
+	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   *PodSpec            `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
-	Status *InfDaemonSetStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
+	Spec   *PodSpec             `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	Status *KoleDaemonSetStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
 
-type InfDaemonSetStatus struct {
+type KoleDaemonSetStatus struct {
 	CurrentNumberScheduled int `json:"currentNumberScheduled"`
 	DesiredNumberScheduled int `json:"desiredNumberScheduled"`
 	NumberReady            int `json:"numberReady"`
@@ -49,10 +48,10 @@ type PodSpec struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// InfDaemonSetList is
-type InfDaemonSetList struct {
+// KoleDaemonSetList is
+type KoleDaemonSetList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
 
-	Items []InfDaemonSet `json:"items"`
+	Items []KoleDaemonSet `json:"items"`
 }

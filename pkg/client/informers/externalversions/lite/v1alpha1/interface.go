@@ -24,10 +24,10 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// InfDaemonSets returns a InfDaemonSetInformer.
-	InfDaemonSets() InfDaemonSetInformer
 	// InfEdgeNodes returns a InfEdgeNodeInformer.
 	InfEdgeNodes() InfEdgeNodeInformer
+	// KoleDaemonSets returns a KoleDaemonSetInformer.
+	KoleDaemonSets() KoleDaemonSetInformer
 	// QueryNodes returns a QueryNodeInformer.
 	QueryNodes() QueryNodeInformer
 	// Summaries returns a SummaryInformer.
@@ -45,14 +45,14 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// InfDaemonSets returns a InfDaemonSetInformer.
-func (v *version) InfDaemonSets() InfDaemonSetInformer {
-	return &infDaemonSetInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
 // InfEdgeNodes returns a InfEdgeNodeInformer.
 func (v *version) InfEdgeNodes() InfEdgeNodeInformer {
 	return &infEdgeNodeInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// KoleDaemonSets returns a KoleDaemonSetInformer.
+func (v *version) KoleDaemonSets() KoleDaemonSetInformer {
+	return &koleDaemonSetInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // QueryNodes returns a QueryNodeInformer.

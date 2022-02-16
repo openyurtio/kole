@@ -32,59 +32,59 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// InfDaemonSetInformer provides access to a shared informer and lister for
-// InfDaemonSets.
-type InfDaemonSetInformer interface {
+// KoleDaemonSetInformer provides access to a shared informer and lister for
+// KoleDaemonSets.
+type KoleDaemonSetInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.InfDaemonSetLister
+	Lister() v1alpha1.KoleDaemonSetLister
 }
 
-type infDaemonSetInformer struct {
+type koleDaemonSetInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewInfDaemonSetInformer constructs a new informer for InfDaemonSet type.
+// NewKoleDaemonSetInformer constructs a new informer for KoleDaemonSet type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewInfDaemonSetInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredInfDaemonSetInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewKoleDaemonSetInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredKoleDaemonSetInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredInfDaemonSetInformer constructs a new informer for InfDaemonSet type.
+// NewFilteredKoleDaemonSetInformer constructs a new informer for KoleDaemonSet type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredInfDaemonSetInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredKoleDaemonSetInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.LiteV1alpha1().InfDaemonSets(namespace).List(context.TODO(), options)
+				return client.LiteV1alpha1().KoleDaemonSets(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.LiteV1alpha1().InfDaemonSets(namespace).Watch(context.TODO(), options)
+				return client.LiteV1alpha1().KoleDaemonSets(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&litev1alpha1.InfDaemonSet{},
+		&litev1alpha1.KoleDaemonSet{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *infDaemonSetInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredInfDaemonSetInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *koleDaemonSetInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredKoleDaemonSetInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *infDaemonSetInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&litev1alpha1.InfDaemonSet{}, f.defaultInformer)
+func (f *koleDaemonSetInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&litev1alpha1.KoleDaemonSet{}, f.defaultInformer)
 }
 
-func (f *infDaemonSetInformer) Lister() v1alpha1.InfDaemonSetLister {
-	return v1alpha1.NewInfDaemonSetLister(f.Informer().GetIndexer())
+func (f *koleDaemonSetInformer) Lister() v1alpha1.KoleDaemonSetLister {
+	return v1alpha1.NewKoleDaemonSetLister(f.Informer().GetIndexer())
 }

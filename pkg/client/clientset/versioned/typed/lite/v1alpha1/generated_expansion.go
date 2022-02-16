@@ -18,9 +18,9 @@ limitations under the License.
 
 package v1alpha1
 
-type InfDaemonSetExpansion interface{}
-
 type InfEdgeNodeExpansion interface{}
+
+type KoleDaemonSetExpansion interface{}
 
 type QueryNodeExpansion interface{}
 

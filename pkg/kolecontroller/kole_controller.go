@@ -36,8 +36,8 @@ import (
 	"github.com/openyurtio/kole/pkg/util"
 )
 
-// +kubebuilder:rbac:groups=lite.openyurt.io,resources=infdaemonsets,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=lite.openyurt.io,resources=infdaemonsets/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=lite.openyurt.io,resources=koledaemonsets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=lite.openyurt.io,resources=koledaemonsets/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=lite.openyurt.io,resources=querynodes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=lite.openyurt.io,resources=querynodes/status,verbs=get;update;patch
 
@@ -56,8 +56,8 @@ type KoleController struct {
 	DesiredPodsCache     *DesiredPodsCache
 	QueryNodeStatusCache *QueryNodeStatusCache
 
-	InfDaemonSetController *InfDaemonSetController
-	QueryNodeController    *QueryNodeController
+	KoleDaemonSetController *KoleDaemonSetController
+	QueryNodeController     *QueryNodeController
 
 	// key nodename
 	HeartBeatCache *HeartBeatCache
@@ -92,7 +92,7 @@ func NewMainKoleController(stop chan struct{}, config *options.KoleControllerFla
 		return nil, err
 	}
 
-	heatBeatCache, heatBeatFilter, snapedName, observerdPods, nodeStatus, err := LoadSnapShot(crdclient, config, processer)
+	heartBeatCache, heartBeatFilter, snapedName, observerdPods, nodeStatus, err := LoadSnapShot(crdclient, config, processer)
 	if err != nil {
 		return nil, err
 	}
@@ -107,11 +107,11 @@ func NewMainKoleController(stop chan struct{}, config *options.KoleControllerFla
 
 		HeartBeatCache: &HeartBeatCache{
 			RWMutex: &sync.RWMutex{},
-			Cache:   heatBeatCache,
+			Cache:   heartBeatCache,
 		},
 		HeartBeatFilter: &HeartBeatFilter{
 			Mutex:  &sync.Mutex{},
-			Filter: heatBeatFilter,
+			Filter: heartBeatFilter,
 		},
 
 		ObserverdPodsCache: &ObserverdPodsCache{
@@ -128,17 +128,17 @@ func NewMainKoleController(stop chan struct{}, config *options.KoleControllerFla
 	}
 
 	factory := externalversions.NewSharedInformerFactory(crdclient, time.Second*70)
-	infDaemonSetInfor := factory.Lite().V1alpha1().InfDaemonSets()
-	controller, err := NewInfDaemonSetController(crdclient, infDaemonSetInfor, koleInstance)
+	koleDaemonSetInform := factory.Lite().V1alpha1().KoleDaemonSets()
+	controller, err := NewKoleDaemonSetController(crdclient, koleDaemonSetInform, koleInstance)
 
-	queryNodeInfor := factory.Lite().V1alpha1().QueryNodes()
-	queryNodeController, err := NewQueryNodeController(crdclient, queryNodeInfor, koleInstance)
+	queryNodeInform := factory.Lite().V1alpha1().QueryNodes()
+	queryNodeController, err := NewQueryNodeController(crdclient, queryNodeInform, koleInstance)
 
 	go factory.Start(stop)
 
 	if !cache.WaitForCacheSync(wait.NeverStop,
-		infDaemonSetInfor.Informer().HasSynced,
-		queryNodeInfor.Informer().HasSynced,
+		koleDaemonSetInform.Informer().HasSynced,
+		queryNodeInform.Informer().HasSynced,
 	) {
 		utilruntime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
 		return nil, fmt.Errorf("time out")
@@ -147,10 +147,10 @@ func NewMainKoleController(stop chan struct{}, config *options.KoleControllerFla
 	go controller.Run(5, stop)
 	go queryNodeController.Run(5, stop)
 
-	koleInstance.InfDaemonSetController = controller
+	koleInstance.KoleDaemonSetController = controller
 	koleInstance.QueryNodeController = queryNodeController
 
-	for nodeName, _ := range heatBeatCache {
+	for nodeName, _ := range heartBeatCache {
 		controller.AddHost(nodeName)
 	}
 	if !config.IsMqtt5 {

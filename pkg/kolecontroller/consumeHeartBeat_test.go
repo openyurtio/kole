@@ -78,20 +78,20 @@ func TestConsumeHeartBeat(t *testing.T) {
 			Cache:   make(map[string]map[string]*data.Pod)},
 	}
 	factory := externalversions.NewSharedInformerFactory(crdclient, time.Second*70)
-	infDaemonSetInfor := factory.Lite().V1alpha1().InfDaemonSets()
-	controller, err := NewInfDaemonSetController(crdclient, infDaemonSetInfor, infedge)
+	koleDaemonSetInform := factory.Lite().V1alpha1().KoleDaemonSets()
+	controller, err := NewKoleDaemonSetController(crdclient, koleDaemonSetInform, koleInstance)
 
 	go factory.Start(stop)
 
 	if !cache.WaitForCacheSync(wait.NeverStop,
-		infDaemonSetInfor.Informer().HasSynced,
+		koleDaemonSetInform.Informer().HasSynced,
 	) {
 		t.Fatalf("Wait for cache sync error %v", err)
 	}
 
 	go controller.Run(5, stop)
 
-	koleInstance.InfDaemonSetController = controller
+	koleInstance.KoleDaemonSetController = controller
 
 	hb := util.InitMockHeartBeat("", 1)
 
