@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.PHONY: binary fmt vet release 
+.PHONY: binary fmt vet release controller-gen
 
 all: binary 
 
@@ -53,12 +53,33 @@ vet:
 #   or
 #   MQTT5_SERVER="mqtt://8.142.157.111:1883" IMAGES="openyurt/kole:v2" make release
 #    
-release: fmt vet
+release: fmt vet generate
 	bash hack/make-rules/release-images.sh
 	bash hack/make-rules/manifest.sh
 
 clean: 
 	-rm -Rf _output
+	-rm -Rf $(GOPATH)/bin/controller-gen-kole
 
-generate: 
+generate: controller-gen
 	bash hack/make-rules/generate.sh
+
+# find or download controller-gen
+# download controller-gen if necessary
+controller-gen:
+ifeq (, $(shell which controller-gen-kole))
+	$(warning controller-gen-kole not found, need to get)	
+	@{ \
+	set -e ;\
+	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
+	cd $$CONTROLLER_GEN_TMP_DIR ;\
+	go mod init tmp ;\
+	echo "replace sigs.k8s.io/controller-tools => sigs.k8s.io/controller-tools v0.7.0" >> go.mod ;\
+	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.7.0 ;\
+	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
+	mv $(GOPATH)/bin/controller-gen $(GOPATH)/bin/controller-gen-kole ;\
+	} \
+	$(warning install controller-gen-kole successfully)	
+else
+	$(warning controller-gen-kole has installed)
+endif
