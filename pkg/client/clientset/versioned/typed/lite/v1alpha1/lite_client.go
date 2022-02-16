@@ -26,7 +26,6 @@ import (
 
 type LiteV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	InfEdgeNodesGetter
 	KoleDaemonSetsGetter
 	QueryNodesGetter
 	SummariesGetter
@@ -35,10 +34,6 @@ type LiteV1alpha1Interface interface {
 // LiteV1alpha1Client is used to interact with features provided by the lite.openyurt.io group.
 type LiteV1alpha1Client struct {
 	restClient rest.Interface
-}
-
-func (c *LiteV1alpha1Client) InfEdgeNodes(namespace string) InfEdgeNodeInterface {
-	return newInfEdgeNodes(c, namespace)
 }
 
 func (c *LiteV1alpha1Client) KoleDaemonSets(namespace string) KoleDaemonSetInterface {

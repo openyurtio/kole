@@ -32,7 +32,7 @@ import (
 
 	"github.com/openyurtio/kole/cmd/kole-controller/app/options"
 	apiv1alpha1 "github.com/openyurtio/kole/pkg/apis/lite/v1alpha1"
-	"github.com/openyurtio/kole/pkg/kolecontroller"
+	"github.com/openyurtio/kole/pkg/controller"
 	"github.com/openyurtio/kole/pkg/projectinfo"
 )
 
@@ -160,9 +160,9 @@ func Run(ctx context.Context, config *options.KoleControllerFlags) error {
 
 func RunKoleController(stop chan struct{}, config *options.KoleControllerFlags) error {
 
-	lite, err := kolecontroller.NewMainKoleController(stop,
+	lite, err := controller.NewMainKoleController(stop,
 		config,
-		&kolecontroller.Gzip{})
+		&controller.Gzip{})
 	if err != nil {
 		klog.Errorf("NewMainKoleController error %v", err)
 		return err

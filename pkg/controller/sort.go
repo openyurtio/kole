@@ -13,30 +13,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+package controller
 
-package kolecontroller
+import "github.com/openyurtio/kole/pkg/apis/lite/v1alpha1"
 
-import (
-	"sync"
+// BySummary implements sort.Interface to allow ControllerRevisions to be sorted by Revision.
+type BySummary []v1alpha1.Summary
 
-	"github.com/openyurtio/kole/pkg/apis/lite/v1alpha1"
-)
-
-type QueryNodeStatusCache struct {
-	*sync.RWMutex
-	NameToStatus map[string]*v1alpha1.QueryNodeStatus
+func (br BySummary) Len() int {
+	return len(br)
 }
 
-func (c *QueryNodeStatusCache) Reset(nameToStatus map[string]*v1alpha1.QueryNodeStatus) {
-	c.Lock()
-	c.NameToStatus = nameToStatus
-	c.Unlock()
+// Less breaks ties first by creation timestamp, then by name
+func (br BySummary) Less(i, j int) bool {
+	return br[i].Index < br[j].Index
 }
 
-func (c *QueryNodeStatusCache) GetNodeStatus(nodeName string) []*v1alpha1.QueryNodeStatus {
-	s := make([]*v1alpha1.QueryNodeStatus, 0, 10)
-	c.RLock()
-	s = append(s, c.NameToStatus[nodeName])
-	c.RUnlock()
-	return s
+func (br BySummary) Swap(i, j int) {
+	br[i], br[j] = br[j], br[i]
 }

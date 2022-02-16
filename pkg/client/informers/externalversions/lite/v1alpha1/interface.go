@@ -24,8 +24,6 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// InfEdgeNodes returns a InfEdgeNodeInformer.
-	InfEdgeNodes() InfEdgeNodeInformer
 	// KoleDaemonSets returns a KoleDaemonSetInformer.
 	KoleDaemonSets() KoleDaemonSetInformer
 	// QueryNodes returns a QueryNodeInformer.
@@ -43,11 +41,6 @@ type version struct {
 // New returns a new Interface.
 func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakListOptions internalinterfaces.TweakListOptionsFunc) Interface {
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
-}
-
-// InfEdgeNodes returns a InfEdgeNodeInformer.
-func (v *version) InfEdgeNodes() InfEdgeNodeInformer {
-	return &infEdgeNodeInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // KoleDaemonSets returns a KoleDaemonSetInformer.

@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package kolecontroller
+package controller
 
 import (
 	"context"
@@ -41,7 +41,7 @@ import (
 	"github.com/openyurtio/kole/pkg/util"
 )
 
-const KoleDaemonSetHashKey = "openyurt.io.infdaemonset/podspec.hash"
+const KoleDaemonSetHashKey = "openyurt.io.koledaemonset/podspec.hash"
 
 type KoleDaemonSetController struct {
 	kubeclient versioned.Interface

@@ -35,13 +35,6 @@ func ValidateGlobalFlags(f *GlobalFlags) error {
 	return nil
 }
 
-// ValidateCreateNodesFlags
-func ValidateCreateNodesFlags(f *CreateInfEdgeNodesFlags) error {
-	// ensure that nobody sets DynamicConfigDir if the dynamic config feature gate is turned off
-
-	return nil
-}
-
 func NewGlobalFlags() *GlobalFlags {
 	home, err := homedir.Dir()
 	if err != nil {

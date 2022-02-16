@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package kolecontroller
+package controller
 
 import (
 	"fmt"
@@ -165,7 +165,7 @@ func NewMainKoleController(stop chan struct{}, config *options.KoleControllerFla
 		koleInstance.MessageHandler = h
 	} else {
 		// mqtt 5
-		h, err := message.NewMqtt5Handler(config.Mqtt5Flags.MqttServer, koleInstance.Mqtt5CreateSubscribes(), "kolecontroller-mqtt-v5", false)
+		h, err := message.NewMqtt5Handler(config.Mqtt5Flags.MqttServer, koleInstance.Mqtt5CreateSubscribes(), "controller-mqtt-v5", false)
 		if err != nil {
 			return nil, err
 		}

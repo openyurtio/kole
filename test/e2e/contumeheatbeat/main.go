@@ -31,8 +31,8 @@ import (
 
 	"github.com/openyurtio/kole/pkg/client/clientset/versioned"
 	"github.com/openyurtio/kole/pkg/client/informers/externalversions"
+	"github.com/openyurtio/kole/pkg/controller"
 	"github.com/openyurtio/kole/pkg/data"
-	"github.com/openyurtio/kole/pkg/kolecontroller"
 	"github.com/openyurtio/kole/pkg/util"
 )
 
@@ -65,27 +65,27 @@ func main() {
 		log.Fatalf("Build versioned config error %v", err)
 	}
 
-	infedge := &kolecontroller.InfEdgeController{
+	infedge := &controller.InfEdgeController{
 
-		HeatBeatCache: &kolecontroller.HeatBeatCache{
+		HeatBeatCache: &controller.HeatBeatCache{
 			RWMutex: &sync.RWMutex{},
 			Cache:   make(map[string]*data.HeatBeat),
 		},
-		HeatBeatFilter: &kolecontroller.HeatBeatFilter{
+		HeatBeatFilter: &controller.HeatBeatFilter{
 			Mutex:  &sync.Mutex{},
-			Filter: make(map[string]*kolecontroller.FilterInfo),
+			Filter: make(map[string]*controller.FilterInfo),
 		},
-		ObserverdPodsCache: &kolecontroller.ObserverdPodsCache{
+		ObserverdPodsCache: &controller.ObserverdPodsCache{
 			RWMutex: &sync.RWMutex{},
 			Cache:   make(map[string]map[string]*data.HeatBeatPod),
 		},
-		DesiredPodsCache: &kolecontroller.DesiredPodsCache{
+		DesiredPodsCache: &controller.DesiredPodsCache{
 			RWMutex: &sync.RWMutex{},
 			Cache:   make(map[string]map[string]*data.Pod)},
 	}
 	factory := externalversions.NewSharedInformerFactory(crdclient, time.Second*70)
 	infDaemonSetInfor := factory.Lite().V1alpha1().InfDaemonSets()
-	controller, err := kolecontroller.NewInfDaemonSetController(crdclient, infDaemonSetInfor, infedge)
+	controller, err := controller.NewInfDaemonSetController(crdclient, infDaemonSetInfor, infedge)
 
 	go factory.Start(stop)
 
