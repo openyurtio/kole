@@ -30,8 +30,8 @@ function generate() {
         cd $KOLE_ROOT
         local crdPath="./config/crd"
         local rbacPath="./config/rbac"
-        controller-gen crd:crdVersions=v1 paths="./pkg/apis/..." output:crd:artifacts:config=${crdPath}
-        controller-gen rbac:roleName=kole paths="./pkg/..." output:rbac:artifacts:config=${rbacPath}
+        controller-gen-kole crd:crdVersions=v1 paths="./pkg/apis/..." output:crd:artifacts:config=${crdPath}
+        controller-gen-kole rbac:roleName=kole paths="./pkg/..." output:rbac:artifacts:config=${rbacPath}
 
         go mod tidy
 
