@@ -28,10 +28,6 @@ type FakeLiteV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeLiteV1alpha1) InfEdgeNodes(namespace string) v1alpha1.InfEdgeNodeInterface {
-	return &FakeInfEdgeNodes{c, namespace}
-}
-
 func (c *FakeLiteV1alpha1) KoleDaemonSets(namespace string) v1alpha1.KoleDaemonSetInterface {
 	return &FakeKoleDaemonSets{c, namespace}
 }

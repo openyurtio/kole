@@ -13,22 +13,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package kolecontroller
+package controller
 
-import "github.com/openyurtio/kole/pkg/apis/lite/v1alpha1"
+import (
+	outmqtt "github.com/eclipse/paho.mqtt.golang"
+	"k8s.io/klog/v2"
 
-// BySummary implements sort.Interface to allow ControllerRevisions to be sorted by Revision.
-type BySummary []v1alpha1.Summary
+	"github.com/openyurtio/kole/pkg/data"
+)
 
-func (br BySummary) Len() int {
-	return len(br)
-}
-
-// Less breaks ties first by creation timestamp, then by name
-func (br BySummary) Less(i, j int) bool {
-	return br[i].Index < br[j].Index
-}
-
-func (br BySummary) Swap(i, j int) {
-	br[i], br[j] = br[j], br[i]
+func (c *KoleController) Mqtt3SubEdgeHeartBeat(client outmqtt.Client, message outmqtt.Message) {
+	hb, err := data.UnmarshalPayloadToHeartBeat(message.Payload())
+	if err != nil {
+		klog.Errorf("UnmarshalPayloadToHeartBeat error %v", err)
+		return
+	}
+	c.ConsumeHeartBeatDirect(hb)
+	klog.V(5).Infof("sub heatbeat topic %s Name %s State %s", message.Topic(), hb.Name, hb.State)
 }

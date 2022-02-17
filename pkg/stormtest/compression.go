@@ -32,8 +32,8 @@ import (
 	"github.com/openyurtio/kole/cmd/stormtest/cmd/options"
 	"github.com/openyurtio/kole/pkg/apis/lite/v1alpha1"
 	"github.com/openyurtio/kole/pkg/client/clientset/versioned"
+	"github.com/openyurtio/kole/pkg/controller"
 	"github.com/openyurtio/kole/pkg/data"
-	"github.com/openyurtio/kole/pkg/kolecontroller"
 	"github.com/openyurtio/kole/pkg/util"
 )
 
@@ -162,7 +162,7 @@ func (n *Compression) LoadSummariesByNs(ns string) ([]byte, error) {
 	}
 
 	//sort by index
-	sort.Stable(kolecontroller.BySummary(allSummaris))
+	sort.Stable(controller.BySummary(allSummaris))
 	for i, _ := range allSummaris {
 		cacheData = append(cacheData, allSummaris[i].Data...)
 	}
@@ -219,12 +219,12 @@ func (n *Compression) DeleteSummariesByNS(ns string) error {
 
 // ProcessHeartBeatMap  only just simulates how to deal with heatBeatCache without doing anything meaningful
 func ProcessHeartBeatMap(heatBeatCache map[string]*data.HeartBeat) {
-	heatBeatFilter := make(map[string]*kolecontroller.FilterInfo)
+	heatBeatFilter := make(map[string]*controller.FilterInfo)
 	observerdPods := make(map[string]map[string]*data.HeartBeatPod)
 	nodeStatus := make(map[string]*v1alpha1.QueryNodeStatus)
 
 	for i, hb := range heatBeatCache {
-		heatBeatFilter[i] = &kolecontroller.FilterInfo{
+		heatBeatFilter[i] = &controller.FilterInfo{
 			SeqNum:    hb.SeqNum,
 			TimeStamp: hb.TimeStamp,
 		}

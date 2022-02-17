@@ -13,27 +13,30 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package options
+
+package controller
 
 import (
-	"github.com/spf13/cobra"
+	"sync"
+
+	"github.com/openyurtio/kole/pkg/apis/lite/v1alpha1"
 )
 
-type LoadInfEdgeNodeFlags struct {
-	*GlobalFlags
-	NS       string
-	PatchNum int
+type QueryNodeStatusCache struct {
+	*sync.RWMutex
+	NameToStatus map[string]*v1alpha1.QueryNodeStatus
 }
 
-func NewLoadInfEdgeNodeFlags(g *GlobalFlags) *LoadInfEdgeNodeFlags {
-	return &LoadInfEdgeNodeFlags{
-		GlobalFlags: g,
-		NS:          "summarystorm",
-		PatchNum:    500,
-	}
+func (c *QueryNodeStatusCache) Reset(nameToStatus map[string]*v1alpha1.QueryNodeStatus) {
+	c.Lock()
+	c.NameToStatus = nameToStatus
+	c.Unlock()
 }
 
-// AddFlags adds flags for a specific
-func (f *LoadInfEdgeNodeFlags) AddFlags(cmd *cobra.Command) {
-	cmd.Flags().IntVar(&f.PatchNum, "patch-num", f.PatchNum, "the list chunk max num")
+func (c *QueryNodeStatusCache) GetNodeStatus(nodeName string) []*v1alpha1.QueryNodeStatus {
+	s := make([]*v1alpha1.QueryNodeStatus, 0, 10)
+	c.RLock()
+	s = append(s, c.NameToStatus[nodeName])
+	c.RUnlock()
+	return s
 }

@@ -23,7 +23,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/openyurtio/kole/pkg/apis/lite/v1alpha1"
-	"github.com/openyurtio/kole/pkg/kolecontroller"
+	"github.com/openyurtio/kole/pkg/controller"
 )
 
 func TestSummris(t *testing.T) {
@@ -55,7 +55,7 @@ func TestSummris(t *testing.T) {
 
 	t.Logf("The length of data after marshal is %d", len(result))
 
-	g := &kolecontroller.Gzip{}
+	g := &controller.Gzip{}
 	compressData, err := g.Compress(result)
 	if err != nil {
 		t.Errorf("Compress error %v", err)

@@ -53,8 +53,6 @@ func (f *genericInformer) Lister() cache.GenericLister {
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
 	// Group=lite.openyurt.io, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithResource("infedgenodes"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Lite().V1alpha1().InfEdgeNodes().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("koledaemonsets"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Lite().V1alpha1().KoleDaemonSets().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("querynodes"):

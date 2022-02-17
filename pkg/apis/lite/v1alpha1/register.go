@@ -44,8 +44,6 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&Summary{},
 		&SummaryList{},
-		&InfEdgeNode{},
-		&InfEdgeNodeList{},
 		&QueryNode{},
 		&QueryNodeList{},
 		&KoleDaemonSet{},

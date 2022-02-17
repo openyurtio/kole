@@ -20,7 +20,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/openyurtio/kole/pkg/kolecontroller"
+	"github.com/openyurtio/kole/pkg/controller"
 )
 
 type CompressionFlags struct {
@@ -31,15 +31,15 @@ type CompressionFlags struct {
 	OnlySaveCrs bool
 }
 
-var supportAlgthms map[string]kolecontroller.DataProcesser
+var supportAlgthms map[string]controller.DataProcesser
 
 func init() {
-	supportAlgthms = make(map[string]kolecontroller.DataProcesser)
-	supportAlgthms["gzip"] = &kolecontroller.Gzip{}
-	supportAlgthms["lzw"] = &kolecontroller.Lzw{}
-	supportAlgthms["flate"] = &kolecontroller.Flate{}
-	supportAlgthms["lz4"] = &kolecontroller.Lz4{}
-	supportAlgthms["snappy"] = &kolecontroller.Snappy{}
+	supportAlgthms = make(map[string]controller.DataProcesser)
+	supportAlgthms["gzip"] = &controller.Gzip{}
+	supportAlgthms["lzw"] = &controller.Lzw{}
+	supportAlgthms["flate"] = &controller.Flate{}
+	supportAlgthms["lz4"] = &controller.Lz4{}
+	supportAlgthms["snappy"] = &controller.Snappy{}
 }
 
 func SupprtAlgthms() []string {
@@ -50,7 +50,7 @@ func SupprtAlgthms() []string {
 	return alg
 }
 
-func AlgthmFactory(algName string) (kolecontroller.DataProcesser, error) {
+func AlgthmFactory(algName string) (controller.DataProcesser, error) {
 
 	p, ok := supportAlgthms[algName]
 	if ok {

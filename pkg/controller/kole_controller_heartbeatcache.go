@@ -13,21 +13,42 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package kolecontroller
+
+package controller
 
 import (
-	outmqtt "github.com/eclipse/paho.mqtt.golang"
-	"k8s.io/klog/v2"
+	"sync"
+	"time"
 
 	"github.com/openyurtio/kole/pkg/data"
 )
 
-func (c *KoleController) Mqtt3SubEdgeHeartBeat(client outmqtt.Client, message outmqtt.Message) {
-	hb, err := data.UnmarshalPayloadToHeartBeat(message.Payload())
-	if err != nil {
-		klog.Errorf("UnmarshalPayloadToHeartBeat error %v", err)
-		return
+type HeartBeatCache struct {
+	*sync.RWMutex
+	Cache map[string]*data.HeartBeat
+}
+
+func (c *HeartBeatCache) SafeReadOperate(f func()) {
+	c.RLock()
+	f()
+	c.RUnlock()
+}
+
+func (c *HeartBeatCache) ReceiveHeartBeat(hb *data.HeartBeat, daemonSetCtl *KoleDaemonSetController) *data.HeartBeatACK {
+	n := time.Now().Unix()
+	var ack *data.HeartBeatACK
+
+	c.Lock()
+
+	if hb.State == data.HeartBeatRegistering {
+		//hb.State = data.HeartBeatRegisterd
+		daemonSetCtl.AddHost(hb.Name)
 	}
-	c.ConsumeHeartBeatDirect(hb)
-	klog.V(5).Infof("sub heatbeat topic %s Name %s State %s", message.Topic(), hb.Name, hb.State)
+
+	hb.LasterTimeStamp = n
+	c.Cache[hb.Name] = hb
+	// Unlock
+	c.Unlock()
+
+	return ack
 }
