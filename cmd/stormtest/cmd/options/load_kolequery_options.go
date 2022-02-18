@@ -17,21 +17,21 @@ package options
 
 import "github.com/spf13/cobra"
 
-type LoadQueryNodeFlags struct {
+type LoadKoleQueryFlags struct {
 	*GlobalFlags
 	Ns   string
 	Name string
 }
 
-func NewLoadQueryNodeFlags(g *GlobalFlags) *LoadQueryNodeFlags {
-	return &LoadQueryNodeFlags{
+func NewLoadKoleQueryFlags(g *GlobalFlags) *LoadKoleQueryFlags {
+	return &LoadKoleQueryFlags{
 		GlobalFlags: g,
 		Ns:          "infedge",
 		Name:        "query-node",
 	}
 }
 
-func (f *LoadQueryNodeFlags) AddFlags(cmd *cobra.Command) {
+func (f *LoadKoleQueryFlags) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.Ns, "namespace", f.Ns, "Namespace where cr exist")
 	cmd.Flags().StringVar(&f.Name, "name", f.Name, "the name of cr")
 }

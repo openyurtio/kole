@@ -269,24 +269,24 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.7.0
   creationTimestamp: null
-  name: querynodes.lite.openyurt.io
+  name: kolequeries.lite.openyurt.io
 spec:
   group: lite.openyurt.io
   names:
     categories:
     - all
-    kind: QueryNode
-    listKind: QueryNodeList
-    plural: querynodes
+    kind: KoleQuery
+    listKind: KoleQueryList
+    plural: kolequeries
     shortNames:
-    - qn
-    singular: querynode
+    - kq
+    singular: kolequery
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: QueryNode is
+        description: KoleQuery is
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -302,29 +302,39 @@ spec:
             type: object
           spec:
             properties:
-              nodeLabelSelector:
+              objectName:
                 type: string
-              nodeName:
-                description: NodePoolSelector is a label query over nodepool that
-                  should match the replica count. It must match the nodepool's labels.
-                type: string
-              nodeSelector:
+              objectSelector:
                 additionalProperties:
                   type: string
+                description: label selectors of the query objects
                 type: object
-              nodeStatus:
+              objectStatus:
+                type: string
+              objectType:
+                type: string
+              queryType:
+                description: For now, the KoleQueryWatch type is only supported for
+                  querying a single object.
                 type: string
             type: object
           status:
             items:
               properties:
-                infEdgeNodeName:
+                lastObservedTime:
+                  format: date-time
                   type: string
-                status:
+                objectName:
+                  type: string
+                objectStatus:
+                  type: string
+                objectType:
                   type: string
               required:
-              - infEdgeNodeName
-              - status
+              - lastObservedTime
+              - objectName
+              - objectStatus
+              - objectType
               type: object
             type: array
         type: object

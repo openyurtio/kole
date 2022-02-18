@@ -35,22 +35,22 @@ import (
 	listV1alpha1 "github.com/openyurtio/kole/pkg/client/listers/lite/v1alpha1"
 )
 
-type QueryNodeController struct {
+type KoleQueryController struct {
 	kubeclient versioned.Interface
 	queue      workqueue.RateLimitingInterface    //workqueue 的引用
-	informer   externalV1alpha1.QueryNodeInformer // Informer 的引用
+	informer   externalV1alpha1.KoleQueryInformer // Informer 的引用
 	koleCtl    *KoleController
-	lister     listV1alpha1.QueryNodeLister
+	lister     listV1alpha1.KoleQueryLister
 }
 
-// NewQueryNodeController creates a new  QueryNodeController.
-func NewQueryNodeController(client versioned.Interface,
-	informer externalV1alpha1.QueryNodeInformer,
-	koleCtl *KoleController) (*QueryNodeController, error) {
+// NewKoleQueryController creates a new  KoleQueryController.
+func NewKoleQueryController(client versioned.Interface,
+	informer externalV1alpha1.KoleQueryInformer,
+	koleCtl *KoleController) (*KoleQueryController, error) {
 
 	queue := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 
-	dsc := &QueryNodeController{
+	kqc := &KoleQueryController{
 		kubeclient: client,
 		informer:   informer,
 		queue:      queue,
@@ -59,66 +59,63 @@ func NewQueryNodeController(client versioned.Interface,
 	}
 
 	informer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc:    dsc.addQueryNode,
-		UpdateFunc: dsc.updateQueryNode,
-		DeleteFunc: dsc.deleteQueryNode,
+		AddFunc:    kqc.addKoleQuery,
+		UpdateFunc: kqc.updateKoleQuery,
+		DeleteFunc: kqc.deleteKoleQuery,
 	})
 
-	return dsc, nil
+	return kqc, nil
 }
 
-func (c *QueryNodeController) addQueryNode(obj interface{}) {
-	ds := obj.(*v1alpha1.QueryNode)
-	klog.V(4).Infof("Adding QueryNode %s", ds.Name)
-	c.enqueue(ds)
+func (c *KoleQueryController) addKoleQuery(obj interface{}) {
+	kq := obj.(*v1alpha1.KoleQuery)
+	klog.V(4).Infof("Adding KoleQuery %s", kq.Name)
+	c.enqueue(kq)
 }
 
-func (c *QueryNodeController) updateQueryNode(oldObj, newObj interface{}) {
-	//	oldds := oldObj.(*v1alpha1.QueryNode)
-	ds := newObj.(*v1alpha1.QueryNode)
-	klog.V(4).Infof("Update QueryNode %s", ds.Name)
-
-	c.enqueue(ds)
+func (c *KoleQueryController) updateKoleQuery(oldObj, newObj interface{}) {
+	//	oldds := oldObj.(*v1alpha1.KoleQuery)
+	kq := newObj.(*v1alpha1.KoleQuery)
+	klog.V(4).Infof("Update KoleQuery %s", kq.Name)
+	c.enqueue(kq)
 }
 
-func (c *QueryNodeController) deleteQueryNode(obj interface{}) {
-	ds := obj.(*v1alpha1.QueryNode)
-	klog.V(4).Infof("Delete QueryNode %s", ds.Name)
-	c.enqueue(ds)
+func (c *KoleQueryController) deleteKoleQuery(obj interface{}) {
+	kq := obj.(*v1alpha1.KoleQuery)
+	klog.V(4).Infof("Delete KoleQuery %s", kq.Name)
+	c.enqueue(kq)
 }
 
-func (dsc *QueryNodeController) enqueue(ds *v1alpha1.QueryNode) {
+func (c *KoleQueryController) enqueue(ds *v1alpha1.KoleQuery) {
 	key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(ds)
 	if err != nil {
 		utilruntime.HandleError(fmt.Errorf("Couldn't get key for object %#v: %v", ds, err))
 		return
 	}
-
-	// TODO: Handle overlapping controllers better. See comment in ReplicationManager.
-	dsc.queue.Add(key)
+	c.queue.Add(key)
 }
 
-func (c *QueryNodeController) Run(threadiness int, stopCh chan struct{}) {
+func (c *KoleQueryController) Run(threadiness int, stopCh chan struct{}) {
 	defer utilruntime.HandleCrash()
 
 	defer c.queue.ShutDown()
 
-	klog.Info("Starting QueryNode controller")
+	klog.Info("Starting KoleQuery controller")
 
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
 
 	<-stopCh
-	klog.Warningf("Stopping QueryNode controller")
+	klog.Warningf("Stopping KoleQuery controller")
 }
 
-func (c *QueryNodeController) runWorker() {
+func (c *KoleQueryController) runWorker() {
 	for c.processNextItem() {
 	}
 }
 
-func (c *QueryNodeController) processNextItem() bool {
+func (c *KoleQueryController) processNextItem() bool {
 	key, shutdown := c.queue.Get()
 	if shutdown {
 		return false
@@ -133,7 +130,7 @@ func (c *QueryNodeController) processNextItem() bool {
 }
 
 // handleErr checks if an error happened and makes sure we will retry later.
-func (c *QueryNodeController) handleErr(err error, key interface{}) {
+func (c *KoleQueryController) handleErr(err error, key interface{}) {
 	if err == nil {
 		// Forget about the #AddRateLimited history of the key on every successful synchronization.
 		// This ensures that future processing of updates for this key is not delayed because of
@@ -158,11 +155,11 @@ func (c *QueryNodeController) handleErr(err error, key interface{}) {
 	klog.Infof("Dropping InfDaemonSet %q out of the queue: %v", key, err)
 }
 
-func (c *QueryNodeController) syncProcess(key string) error {
+func (c *KoleQueryController) syncProcess(key string) error {
 
 	startTime := time.Now()
 	defer func() {
-		klog.V(4).Infof("Finished syncing QueryNode set %q (%v)", key, time.Since(startTime))
+		klog.V(4).Infof("Finished syncing KoleQuery set %q (%v)", key, time.Since(startTime))
 	}()
 
 	namespace, name, err := cache.SplitMetaNamespaceKey(key)
@@ -170,9 +167,9 @@ func (c *QueryNodeController) syncProcess(key string) error {
 		return err
 	}
 
-	qnode, err := c.lister.QueryNodes(namespace).Get(name)
+	kq, err := c.lister.KoleQueries(namespace).Get(name)
 	if errors.IsNotFound(err) {
-		klog.V(3).Infof("QueryNode has been deleted %v", key)
+		klog.V(3).Infof("KoleQuery has been deleted %v", key)
 		// NEED TO DO
 
 		return nil
@@ -181,17 +178,26 @@ func (c *QueryNodeController) syncProcess(key string) error {
 		return fmt.Errorf("unable to retrieve ds %v from store: %v", key, err)
 	}
 
-	s := c.koleCtl.QueryNodeStatusCache.GetNodeStatus(qnode.Spec.NodeName)
-	if qnode.Status == nil {
-		qnode.Status = make([]*v1alpha1.QueryNodeStatus, 0, 10)
-	}
-
-	if !reflect.DeepEqual(s, qnode.Status) {
-		qnode.Status = s
-		_, err = c.kubeclient.LiteV1alpha1().QueryNodes(namespace).UpdateStatus(context.Background(), qnode, metav1.UpdateOptions{})
-		if err != nil {
-			klog.Errorf("Update QueryNode error %v", err)
-			return err
+	if kq.Spec.ObjectType == v1alpha1.KoleObjectNode && kq.Spec.ObjectName != "" {
+		s := c.koleCtl.QueryNodeStatusCache.GetNodeStatus(kq.Spec.ObjectName)
+		if s != nil {
+			if kq.Status == nil {
+				kq.Status = make([]*v1alpha1.KoleQueryStatus, 0, 0)
+			}
+			if len(kq.Status) == 0 {
+				kq.Status = append(kq.Status, &v1alpha1.KoleQueryStatus{})
+			}
+			ts := metav1.Now()
+			s.LastObservedTime = ts
+			kq.Status[0].LastObservedTime = ts
+			if !reflect.DeepEqual(s, kq.Status[0]) {
+				kq.Status[0] = s
+				_, err = c.kubeclient.LiteV1alpha1().KoleQueries(namespace).UpdateStatus(context.Background(), kq, metav1.UpdateOptions{})
+				if err != nil {
+					klog.Errorf("Update KoleQuery error %v", err)
+					return err
+				}
+			}
 		}
 	}
 	return nil

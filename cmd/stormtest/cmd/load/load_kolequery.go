@@ -24,16 +24,16 @@ import (
 	"github.com/openyurtio/kole/pkg/stormtest"
 )
 
-func NewLoadQueryNodeCommand() *cobra.Command {
+func NewLoadKoleQueryCommand() *cobra.Command {
 
-	ops := options.NewLoadQueryNodeFlags(&globalOptions)
+	ops := options.NewLoadKoleQueryFlags(&globalOptions)
 	c := &cobra.Command{
 		Use:   "querynode",
-		Short: "The time required to test load QueryNode",
-		Long:  "The time required to test load QueryNode",
+		Short: "The time required to test load KoleQuery",
+		Long:  "The time required to test load KoleQuery",
 		Run: func(cmd *cobra.Command, args []string) {
 			klog.V(4).Infof("Stormtest load querynode %s config: %#v", ops.Name, *ops)
-			if err := RunLoadQueryNode(ops); err != nil {
+			if err := RunLoadKoleQuery(ops); err != nil {
 				klog.Fatal(err)
 			}
 		},
@@ -43,15 +43,15 @@ func NewLoadQueryNodeCommand() *cobra.Command {
 	return c
 }
 func init() {
-	subrootCmd.AddCommand(NewLoadQueryNodeCommand())
+	subrootCmd.AddCommand(NewLoadKoleQueryCommand())
 }
 
-func RunLoadQueryNode(opt *options.LoadQueryNodeFlags) error {
+func RunLoadKoleQuery(opt *options.LoadKoleQueryFlags) error {
 	defer runtime.HandleCrash()
 
-	lite, err := stormtest.NewLoadQueryNode(opt)
+	lite, err := stormtest.NewLoadKoleQuery(opt)
 	if err != nil {
-		klog.Errorf("NewLoadQueryNode [%s] error %v", opt.Name, err)
+		klog.Errorf("NewLoadKoleQuery [%s] error %v", opt.Name, err)
 		return err
 	}
 	return lite.Run()

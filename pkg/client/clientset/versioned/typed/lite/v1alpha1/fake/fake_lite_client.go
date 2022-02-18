@@ -32,8 +32,8 @@ func (c *FakeLiteV1alpha1) KoleDaemonSets(namespace string) v1alpha1.KoleDaemonS
 	return &FakeKoleDaemonSets{c, namespace}
 }
 
-func (c *FakeLiteV1alpha1) QueryNodes(namespace string) v1alpha1.QueryNodeInterface {
-	return &FakeQueryNodes{c, namespace}
+func (c *FakeLiteV1alpha1) KoleQueries(namespace string) v1alpha1.KoleQueryInterface {
+	return &FakeKoleQueries{c, namespace}
 }
 
 func (c *FakeLiteV1alpha1) Summaries(namespace string) v1alpha1.SummaryInterface {

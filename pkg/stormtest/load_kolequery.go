@@ -28,14 +28,14 @@ import (
 	"github.com/openyurtio/kole/pkg/client/clientset/versioned"
 )
 
-type LoadQueryNode struct {
+type LoadKoleQuery struct {
 	KubeConfig string
 	NS         string
 	Name       string
 	LiteClient versioned.Interface
 }
 
-func NewLoadQueryNode(config *options.LoadQueryNodeFlags) (*LoadQueryNode, error) {
+func NewLoadKoleQuery(config *options.LoadKoleQueryFlags) (*LoadKoleQuery, error) {
 
 	c, err := clientcmd.BuildConfigFromFlags("", config.KubeConfig)
 	if err != nil {
@@ -48,7 +48,7 @@ func NewLoadQueryNode(config *options.LoadQueryNodeFlags) (*LoadQueryNode, error
 		return nil, err
 	}
 
-	t := &LoadQueryNode{
+	t := &LoadKoleQuery{
 		KubeConfig: config.KubeConfig,
 		NS:         config.Ns,
 		LiteClient: crdclient,
@@ -57,13 +57,13 @@ func NewLoadQueryNode(config *options.LoadQueryNodeFlags) (*LoadQueryNode, error
 	return t, nil
 }
 
-func (n *LoadQueryNode) Run() error {
+func (n *LoadKoleQuery) Run() error {
 	klog.V(4).Infof("Start to load all cr %s ...", n.Name)
 	var num int
 	now := time.Now()
 	for {
 		singleNow := time.Now()
-		_, err := n.LiteClient.LiteV1alpha1().QueryNodes(n.NS).Get(context.Background(), n.Name, metav1.GetOptions{})
+		_, err := n.LiteClient.LiteV1alpha1().KoleQueries(n.NS).Get(context.Background(), n.Name, metav1.GetOptions{})
 		if err != nil {
 			klog.Errorf("Get querynode in ns[%s] error %v", n.NS, err)
 			return err

@@ -221,16 +221,17 @@ func (n *Compression) DeleteSummariesByNS(ns string) error {
 func ProcessHeartBeatMap(heatBeatCache map[string]*data.HeartBeat) {
 	heatBeatFilter := make(map[string]*controller.FilterInfo)
 	observerdPods := make(map[string]map[string]*data.HeartBeatPod)
-	nodeStatus := make(map[string]*v1alpha1.QueryNodeStatus)
+	nodeStatus := make(map[string]*v1alpha1.KoleQueryStatus)
 
 	for i, hb := range heatBeatCache {
 		heatBeatFilter[i] = &controller.FilterInfo{
 			SeqNum:    hb.SeqNum,
 			TimeStamp: hb.TimeStamp,
 		}
-		nodeStatus[hb.Name] = &v1alpha1.QueryNodeStatus{
-			Status:          hb.State,
-			InfEdgeNodeName: hb.Name,
+		nodeStatus[hb.Name] = &v1alpha1.KoleQueryStatus{
+			ObjectStatus: hb.State,
+			ObjectName:   hb.Name,
+			ObjectType:   v1alpha1.KoleObjectNode,
 		}
 		observerdPods[hb.Name] = make(map[string]*data.HeartBeatPod)
 		for _, hbp := range hb.Pods {

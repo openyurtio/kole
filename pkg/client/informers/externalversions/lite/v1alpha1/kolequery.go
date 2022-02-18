@@ -32,59 +32,59 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// QueryNodeInformer provides access to a shared informer and lister for
-// QueryNodes.
-type QueryNodeInformer interface {
+// KoleQueryInformer provides access to a shared informer and lister for
+// KoleQueries.
+type KoleQueryInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.QueryNodeLister
+	Lister() v1alpha1.KoleQueryLister
 }
 
-type queryNodeInformer struct {
+type koleQueryInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewQueryNodeInformer constructs a new informer for QueryNode type.
+// NewKoleQueryInformer constructs a new informer for KoleQuery type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewQueryNodeInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredQueryNodeInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewKoleQueryInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredKoleQueryInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredQueryNodeInformer constructs a new informer for QueryNode type.
+// NewFilteredKoleQueryInformer constructs a new informer for KoleQuery type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredQueryNodeInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredKoleQueryInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.LiteV1alpha1().QueryNodes(namespace).List(context.TODO(), options)
+				return client.LiteV1alpha1().KoleQueries(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.LiteV1alpha1().QueryNodes(namespace).Watch(context.TODO(), options)
+				return client.LiteV1alpha1().KoleQueries(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&litev1alpha1.QueryNode{},
+		&litev1alpha1.KoleQuery{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *queryNodeInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredQueryNodeInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *koleQueryInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredKoleQueryInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *queryNodeInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&litev1alpha1.QueryNode{}, f.defaultInformer)
+func (f *koleQueryInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&litev1alpha1.KoleQuery{}, f.defaultInformer)
 }
 
-func (f *queryNodeInformer) Lister() v1alpha1.QueryNodeLister {
-	return v1alpha1.NewQueryNodeLister(f.Informer().GetIndexer())
+func (f *koleQueryInformer) Lister() v1alpha1.KoleQueryLister {
+	return v1alpha1.NewKoleQueryLister(f.Informer().GetIndexer())
 }

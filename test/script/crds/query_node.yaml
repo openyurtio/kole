@@ -1,7 +1,9 @@
 apiVersion: lite.openyurt.io/v1alpha1
-kind: QueryNode
+kind: KoleQuery
 metadata:
   name: "query-node"
-  namespace: "infedge"
+  namespace: "kole"
 spec:
-  nodeName: "lite-kubelet-0-0" 
+  queryType : "Get"
+  objectType : "Node"
+  objectName: "lite-kubelet-0-0" 

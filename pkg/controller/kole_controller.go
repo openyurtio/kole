@@ -57,7 +57,7 @@ type KoleController struct {
 	QueryNodeStatusCache *QueryNodeStatusCache
 
 	KoleDaemonSetController *KoleDaemonSetController
-	QueryNodeController     *QueryNodeController
+	KoleQueryController     *KoleQueryController
 
 	// key nodename
 	HeartBeatCache *HeartBeatCache
@@ -129,29 +129,29 @@ func NewMainKoleController(stop chan struct{}, config *options.KoleControllerFla
 
 	factory := externalversions.NewSharedInformerFactory(crdclient, time.Second*70)
 	koleDaemonSetInform := factory.Lite().V1alpha1().KoleDaemonSets()
-	controller, err := NewKoleDaemonSetController(crdclient, koleDaemonSetInform, koleInstance)
+	koleDScontroller, err := NewKoleDaemonSetController(crdclient, koleDaemonSetInform, koleInstance)
 
-	queryNodeInform := factory.Lite().V1alpha1().QueryNodes()
-	queryNodeController, err := NewQueryNodeController(crdclient, queryNodeInform, koleInstance)
+	koleQueryInform := factory.Lite().V1alpha1().KoleQueries()
+	koleQueryController, err := NewKoleQueryController(crdclient, koleQueryInform, koleInstance)
 
 	go factory.Start(stop)
 
 	if !cache.WaitForCacheSync(wait.NeverStop,
 		koleDaemonSetInform.Informer().HasSynced,
-		queryNodeInform.Informer().HasSynced,
+		koleQueryInform.Informer().HasSynced,
 	) {
 		utilruntime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
 		return nil, fmt.Errorf("time out")
 	}
 
-	go controller.Run(5, stop)
-	go queryNodeController.Run(5, stop)
+	go koleDScontroller.Run(5, stop)
+	go koleQueryController.Run(5, stop)
 
-	koleInstance.KoleDaemonSetController = controller
-	koleInstance.QueryNodeController = queryNodeController
+	koleInstance.KoleDaemonSetController = koleDScontroller
+	koleInstance.KoleQueryController = koleQueryController
 
 	for nodeName, _ := range heartBeatCache {
-		controller.AddHost(nodeName)
+		koleDScontroller.AddHost(nodeName)
 	}
 	if !config.IsMqtt5 {
 		h, err := message.NewMqtt3Handler(config.Mqtt3Flags.MqttBroker, config.Mqtt3Flags.MqttBrokerPort, config.Mqtt3Flags.MqttInstance, config.Mqtt3Flags.MqttGroup,

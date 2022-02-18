@@ -55,8 +55,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 	// Group=lite.openyurt.io, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithResource("koledaemonsets"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Lite().V1alpha1().KoleDaemonSets().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("querynodes"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Lite().V1alpha1().QueryNodes().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("kolequeries"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Lite().V1alpha1().KoleQueries().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("summaries"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Lite().V1alpha1().Summaries().Informer()}, nil
 

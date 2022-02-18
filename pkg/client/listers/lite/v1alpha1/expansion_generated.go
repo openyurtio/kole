@@ -26,13 +26,13 @@ type KoleDaemonSetListerExpansion interface{}
 // KoleDaemonSetNamespaceLister.
 type KoleDaemonSetNamespaceListerExpansion interface{}
 
-// QueryNodeListerExpansion allows custom methods to be added to
-// QueryNodeLister.
-type QueryNodeListerExpansion interface{}
+// KoleQueryListerExpansion allows custom methods to be added to
+// KoleQueryLister.
+type KoleQueryListerExpansion interface{}
 
-// QueryNodeNamespaceListerExpansion allows custom methods to be added to
-// QueryNodeNamespaceLister.
-type QueryNodeNamespaceListerExpansion interface{}
+// KoleQueryNamespaceListerExpansion allows custom methods to be added to
+// KoleQueryNamespaceLister.
+type KoleQueryNamespaceListerExpansion interface{}
 
 // SummaryListerExpansion allows custom methods to be added to
 // SummaryLister.
