@@ -24,19 +24,18 @@ import (
 
 type QueryNodeStatusCache struct {
 	*sync.RWMutex
-	NameToStatus map[string]*v1alpha1.QueryNodeStatus
+	NameToStatus map[string]*v1alpha1.KoleQueryStatus
 }
 
-func (c *QueryNodeStatusCache) Reset(nameToStatus map[string]*v1alpha1.QueryNodeStatus) {
+func (c *QueryNodeStatusCache) Reset(nameToStatus map[string]*v1alpha1.KoleQueryStatus) {
 	c.Lock()
 	c.NameToStatus = nameToStatus
 	c.Unlock()
 }
 
-func (c *QueryNodeStatusCache) GetNodeStatus(nodeName string) []*v1alpha1.QueryNodeStatus {
-	s := make([]*v1alpha1.QueryNodeStatus, 0, 10)
+func (c *QueryNodeStatusCache) GetNodeStatus(nodeName string) *v1alpha1.KoleQueryStatus {
 	c.RLock()
-	s = append(s, c.NameToStatus[nodeName])
+	s := c.NameToStatus[nodeName]
 	c.RUnlock()
 	return s
 }

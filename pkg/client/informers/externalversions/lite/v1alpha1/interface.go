@@ -26,8 +26,8 @@ import (
 type Interface interface {
 	// KoleDaemonSets returns a KoleDaemonSetInformer.
 	KoleDaemonSets() KoleDaemonSetInformer
-	// QueryNodes returns a QueryNodeInformer.
-	QueryNodes() QueryNodeInformer
+	// KoleQueries returns a KoleQueryInformer.
+	KoleQueries() KoleQueryInformer
 	// Summaries returns a SummaryInformer.
 	Summaries() SummaryInformer
 }
@@ -48,9 +48,9 @@ func (v *version) KoleDaemonSets() KoleDaemonSetInformer {
 	return &koleDaemonSetInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
-// QueryNodes returns a QueryNodeInformer.
-func (v *version) QueryNodes() QueryNodeInformer {
-	return &queryNodeInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// KoleQueries returns a KoleQueryInformer.
+func (v *version) KoleQueries() KoleQueryInformer {
+	return &koleQueryInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // Summaries returns a SummaryInformer.

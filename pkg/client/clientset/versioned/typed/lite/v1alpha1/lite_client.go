@@ -27,7 +27,7 @@ import (
 type LiteV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	KoleDaemonSetsGetter
-	QueryNodesGetter
+	KoleQueriesGetter
 	SummariesGetter
 }
 
@@ -40,8 +40,8 @@ func (c *LiteV1alpha1Client) KoleDaemonSets(namespace string) KoleDaemonSetInter
 	return newKoleDaemonSets(c, namespace)
 }
 
-func (c *LiteV1alpha1Client) QueryNodes(namespace string) QueryNodeInterface {
-	return newQueryNodes(c, namespace)
+func (c *LiteV1alpha1Client) KoleQueries(namespace string) KoleQueryInterface {
+	return newKoleQueries(c, namespace)
 }
 
 func (c *LiteV1alpha1Client) Summaries(namespace string) SummaryInterface {

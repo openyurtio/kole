@@ -20,6 +20,6 @@ package v1alpha1
 
 type KoleDaemonSetExpansion interface{}
 
-type QueryNodeExpansion interface{}
+type KoleQueryExpansion interface{}
 
 type SummaryExpansion interface{}

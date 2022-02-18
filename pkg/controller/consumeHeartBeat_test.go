@@ -71,7 +71,7 @@ func TestConsumeHeartBeat(t *testing.T) {
 		},
 		QueryNodeStatusCache: &QueryNodeStatusCache{
 			RWMutex:      &sync.RWMutex{},
-			NameToStatus: make(map[string]*v1alpha1.QueryNodeStatus),
+			NameToStatus: make(map[string]*v1alpha1.KoleQueryStatus),
 		},
 		DesiredPodsCache: &DesiredPodsCache{
 			RWMutex: &sync.RWMutex{},
