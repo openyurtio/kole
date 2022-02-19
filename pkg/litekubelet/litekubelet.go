@@ -106,7 +106,6 @@ func NewMainLiteKubelet(deps *options.LiteKubeletFlags, index int, ismqtt5 bool)
 		lite.MessageHandler = h
 	}
 
-	// 此调试信息不要修改， 跟shell 关联
 	klog.V(4).Infof("--- Create client and Subscribe all topic successful node %s ---", hostnameOverride)
 
 	return lite, nil

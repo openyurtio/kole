@@ -53,37 +53,22 @@ type Gzip struct {
 
 func (g *Gzip) Compress(data []byte) ([]byte, error) {
 	var buffer bytes.Buffer
-	//NewWriter方法初始化
-	//now := time.Now()
 	writer := gzip.NewWriter(&buffer)
-	//使用压缩等级
-	//writer, _ := gzip.NewWriterLevel(&buffer, 5)
-	//最开始一直把关闭放在了defer里面，但是这样压缩后数据为空
-	//查阅相关资料才知道：gzip压缩的过程中，Write之后一定要及时Close，不能defer，这样才能flush，否则得不到任何数据
-	/*defer func() {
-		err := writer.Close()
-		if err != nil {
-			logrus.Info("Gzip压缩失败", err.Error())
-		}
-	}()*/
 	_, err := writer.Write(data)
 	if err != nil {
-		//write 出现err后要不要Close()
-		//err = writer.Close()
+		//TODO: should we call close before return?
 		klog.Warning("Gzip Compress fail:", err)
 		return nil, err
 	}
+	// We should close the writer immediately instead of using defer.
 	if err = writer.Close(); err != nil {
 		klog.Warning("Close the Gzip Object fail:", err)
 		return nil, err
 	}
-	//needTime := time.Now().Sub(now).Milliseconds()
-	//klog.Info("implement Gzip Compress, need time:", needTime)
 	return buffer.Bytes(), nil
 }
 
 func (g *Gzip) UnCompress(data []byte) ([]byte, error) {
-	//now := time.Now()
 	reader, err := gzip.NewReader(bytes.NewReader(data))
 	if err != nil {
 		return nil, err
@@ -93,8 +78,6 @@ func (g *Gzip) UnCompress(data []byte) ([]byte, error) {
 			println("Gzip EnCompress fail:", err.Error())
 		}
 	}()
-	//needTime := time.Now().Sub(now).Milliseconds()
-	//klog.Info("implement Gzip Encompress, need time:", needTime)
 	return ioutil.ReadAll(reader)
 }
 
@@ -103,7 +86,6 @@ type Lzw struct {
 }
 
 func (L *Lzw) Compress(data []byte) ([]byte, error) {
-	//now := time.Now()
 	buf := bytes.NewBuffer(nil)
 	w := lzw.NewWriter(buf, lzw.LSB, 8)
 	_, err := w.Write(data)
@@ -115,8 +97,6 @@ func (L *Lzw) Compress(data []byte) ([]byte, error) {
 		klog.Warning("Close the Lzw Compress Object fail :", err)
 		return nil, err
 	}
-	//needTime := time.Now().Sub(now).Milliseconds()
-	//klog.Info("implement Lzw Compress, need time:", needTime)
 	return buf.Bytes(), nil
 }
 
@@ -124,8 +104,6 @@ func (L *Lzw) UnCompress(data []byte) ([]byte, error) {
 	now := time.Now()
 	buf := bytes.NewBuffer(data)
 	r := lzw.NewReader(buf, lzw.LSB, 8)
-	//reader, err := lzw.NewReader(bytes.NewReader(data))
-
 	defer func() {
 		if err := r.Close(); err != nil {
 			println("Close the Lzw EnCompress Object fail:", err.Error())
@@ -136,19 +114,13 @@ func (L *Lzw) UnCompress(data []byte) ([]byte, error) {
 	return ioutil.ReadAll(r)
 }
 
-// go标准库中提供了一个对Bzip2压缩包进行读取的操作/解压操作
-// 但是并没有提供进行bzip2压缩操作
-
 //Flate Compress/EnCompress
 type Flate struct {
 }
 
 func (f *Flate) Compress(data []byte) ([]byte, error) {
-	now := time.Now()
-	// 一个缓存区压缩的内容
 	buf := bytes.NewBuffer(nil)
 
-	// 创建一个flate.Writer
 	flateWrite, err := flate.NewWriter(buf, flate.BestCompression)
 	if err != nil {
 		klog.Fatalln(err)
@@ -160,14 +132,10 @@ func (f *Flate) Compress(data []byte) ([]byte, error) {
 		return nil, err
 	}
 	flateWrite.Flush()
-	needTime := time.Now().Sub(now).Milliseconds()
-	klog.Info("implement Flate Encompress, need time:", needTime)
 	return buf.Bytes(), nil
 }
 
 func (f *Flate) UnCompress(data []byte) ([]byte, error) {
-	now := time.Now()
-
 	buf := bytes.NewBuffer(data)
 	flateReader := flate.NewReader(buf)
 
@@ -179,8 +147,6 @@ func (f *Flate) UnCompress(data []byte) ([]byte, error) {
 				"Err %v, read %v", err, rb)
 		}
 	}
-	needTime := time.Now().Sub(now).Milliseconds()
-	klog.Info("implement Flate Encompress, need time: ", needTime)
 	return rb, nil
 }
 
@@ -208,7 +174,6 @@ type Lz4 struct {
 
 func (lz *Lz4) Compress(data []byte) ([]byte, error) {
 	cmp := make([]byte, len(data))
-	//ht := make([]int, 64<<10)
 	l, err := lz4.CompressBlock(data, cmp, nil)
 	if err != nil {
 		klog.Errorf("Lz4 algorithm compress fail %v", err)
@@ -226,14 +191,3 @@ func (lz *Lz4) UnCompress(data []byte) ([]byte, error) {
 	}
 	return uncmp[:l], nil
 }
-
-//nocompress
-//type Nonecompress struct {
-//}
-//
-//func (N *Nonecompress) Compress(data []byte) ([]byte, error){
-//	return nil, nil
-//}
-//func (N *Nonecompress) UnCompress(data []byte) ([]byte, error){
-//	return nil, nil
-//}

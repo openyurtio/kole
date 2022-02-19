@@ -1,7 +1,7 @@
 apiVersion: lite.openyurt.io/v1alpha1
-kind: InfDaemonSet 
+kind: KoleDaemonSet 
 metadata:
   name: "daemon-set1"
-  namespace: "infedge"
+  namespace: "kole"
 spec:
   image: "nginx:v1.19.0" 

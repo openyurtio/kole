@@ -59,7 +59,6 @@ func main() {
 	// set rate limit
 	c.RateLimiter = flowcontrol.NewTokenBucketRateLimiter(10000, 10000)
 
-	// 实例化clientset对象
 	crdclient, err := versioned.NewForConfig(c)
 	if err != nil {
 		log.Fatalf("Build versioned config error %v", err)

@@ -63,7 +63,6 @@ func (c *KoleController) snapShot() {
 	klog.Infof("Snapshot loop start ...")
 
 	var registeringNum, registedNum, offlineNum int
-	offlineMaps := make(map[int]int)
 	nameToStatus := make(map[string]*v1alpha1.KoleQueryStatus)
 	var hdata []byte
 	var err error
@@ -98,19 +97,6 @@ func (c *KoleController) snapShot() {
 				ObjectStatus: hb.State,
 				ObjectName:   hb.Name,
 				ObjectType:   v1alpha1.KoleObjectNode,
-			}
-
-			i := 1
-			for ; i <= 30; i++ {
-				if subTime < int64(60*i) {
-					break
-				}
-			}
-			i = i - 1
-			if _, ok := offlineMaps[i]; !ok {
-				offlineMaps[i] = 1
-			} else {
-				offlineMaps[i] = offlineMaps[i] + 1
 			}
 
 			switch hb.State {
@@ -149,10 +135,6 @@ func (c *KoleController) snapShot() {
 	klog.Infof("Snapshot Loop: registeringNum %d registerdNum %d offlineNum %d allNum %d len of HBCacheData is %d",
 		registeringNum, registedNum, offlineNum, registedNum+registeringNum+offlineNum, len(hdata))
 	klog.Infof("Current snap use %d s, laster jiange %d s, total jiange %d s", nt-n, needTime, nt-c.FirstSnapTime)
-
-	for t, n := range offlineMaps {
-		klog.Infof("Snapshot Loop: offline time %d m , node nums %d", t, n)
-	}
 
 	c.LasterSnapTime = nt
 	c.LasterSnapIndex++
@@ -299,7 +281,7 @@ func LoadSnapShot(liteClient versioned.Interface, config *options.KoleController
 			break
 		}
 
-		// TODO 可以使用bytes.buffer
+		// TODO we may use bytes.buffer
 		for i, load := range localSummaries.Items {
 			//data, ok := load.BinaryData[CONFIGMAP_KEY]
 			snapedName = append(snapedName, load.GetName())
@@ -335,7 +317,7 @@ func LoadSnapShot(liteClient versioned.Interface, config *options.KoleController
 	if process != nil {
 		hbData, _ = process.UnCompress(hbData)
 	}
-	// TODO 可以使用fast json
+	// TODO we may use fast json
 	if err := json.Unmarshal(hbData, &heartBeatCache); err != nil {
 		klog.Errorf("unmarshal error %v", err)
 		return nil, nil, snapedName, nil, nil, err

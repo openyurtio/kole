@@ -37,8 +37,8 @@ import (
 
 type KoleQueryController struct {
 	kubeclient versioned.Interface
-	queue      workqueue.RateLimitingInterface    //workqueue 的引用
-	informer   externalV1alpha1.KoleQueryInformer // Informer 的引用
+	queue      workqueue.RateLimitingInterface
+	informer   externalV1alpha1.KoleQueryInformer
 	koleCtl    *KoleController
 	lister     listV1alpha1.KoleQueryLister
 }
@@ -170,8 +170,6 @@ func (c *KoleQueryController) syncProcess(key string) error {
 	kq, err := c.lister.KoleQueries(namespace).Get(name)
 	if errors.IsNotFound(err) {
 		klog.V(3).Infof("KoleQuery has been deleted %v", key)
-		// NEED TO DO
-
 		return nil
 	}
 	if err != nil {
