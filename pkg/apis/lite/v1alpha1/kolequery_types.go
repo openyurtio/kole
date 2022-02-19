@@ -47,7 +47,7 @@ type KoleQueryObjectType string
 
 const (
 	KoleObjectNode KoleQueryObjectType = "Node"
-	KoleObjectPod  KoleQueryType       = "Pod"
+	KoleObjectPod  KoleQueryObjectType = "Pod"
 )
 
 type KoleQuerySpec struct {
